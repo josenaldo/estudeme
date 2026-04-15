@@ -1,188 +1,198 @@
 # EstudeMe — Design Document
 
-**Data:** 2026-04-14
-**Status:** Draft (em revisão)
-**Autor:** Josenaldo de Oliveira Matos Filho
+**Date:** 2026-04-14
+**Status:** Draft (under review)
+**Author:** Josenaldo de Oliveira Matos Filho
 
 ---
 
-## 1. Identidade e Visão
+## 1. Identity and Vision
 
-**Nome:** EstudeMe (`estudeme.com` / `estudeme.com.br`)
+**Name:** EstudeMe (`estudeme.com` / `estudeme.com.br`)
 
-**Tagline:** "Seu grimório de estudos — organize trilhas, domine conteúdo, meça progresso."
+**Tagline:** "Your study grimoire — organize trails, master content, measure progress."
 
-### O que é
+### What it is
 
-Plataforma open-core de estudo autodidata onde o vault Markdown é o formato universal de dados. O estudante é protagonista — ele cria, organiza e estuda seu conteúdo. A ferramenta tira do caminho o trabalho mecânico e dá visibilidade sobre onde ele está e para onde ir.
+An open-core self-directed learning platform where a Markdown vault is the universal data format. The student is the protagonist — they create, organize, and study their own content. The tool removes mechanical work from the path and provides visibility on where the student is and where they are going.
 
-### Para quem (em ordem de prioridade)
+### Audience (in priority order)
 
-1. **Autodidata** — quer aprender por conta própria, precisa de estrutura e direcionamento
-2. **Professor** — quer gerar materiais de estudo para alunos e publicar como site
-3. **Especialista/Criador** — autodidata que deu certo, compartilha/vende seus vaults curados
+1. **Self-learner** — wants to learn on their own, needs structure and direction
+2. **Teacher** — wants to generate study materials for students and publish them as a site
+3. **Expert / Creator** — a self-learner who succeeded and now shares or sells curated vaults
 
-### Princípio Fundacional: Student-First
+### Foundational Principle: Student-First
 
-O produto serve primeiro ao estudante. Criadores de conteúdo são estudantes que deram certo — eles não precisam de ferramentas de autoria separadas porque o vault curado é artefato natural do estudo. O marketplace emerge organicamente: quem estudou bem, já tem conteúdo para compartilhar. Isso resolve o cold start problem e garante legitimidade do conteúdo.
+The product serves the student first. Content creators are self-learners who succeeded — they don't need separate authoring tools because the curated vault is a natural artifact of studying. The marketplace emerges organically: whoever studied well already has content to share. This solves the cold-start problem and guarantees content legitimacy.
 
-### Modelo Open-Core
+### Open-Core Model
 
-- **Aberto:** Core lib + CLI + Skills + Plugin Obsidian
-- **Fechado:** App web (SaaS com tiers free/pro/max) + API B2B
-- **Vault sempre do usuário:** dados abertos, formato Markdown, portável
+- **Open:** core library + CLI + skills + Obsidian plugin
+- **Closed:** web app (SaaS with free/pro/max tiers) + B2B API
+- **Vault always belongs to the user:** open data, Markdown format, portable
 
-### Diferencial vs. o que existe
+### Differentiator vs. existing tools
 
-Plugins Obsidian existentes (obsidian-spaced-repetition, flashcards-obsidian, quiz-generator) fazem coisas isoladas. **Nenhum integra analytics de aprendizado** com **orquestração de estudo** — progresso por trilha, retenção por tópico, recomendação de próximos passos, e principalmente o **Colega CDF**: chat conversacional contextual de estudo que entende o vault e o desempenho do estudante.
+Existing Obsidian plugins (obsidian-spaced-repetition, flashcards-obsidian, quiz-generator) do isolated things. **None integrates learning analytics with study orchestration** — trail progress, topic retention, next-step recommendations, and most importantly the **Study Buddy**: a conversational, context-aware study chat that understands the vault and the student's performance.
 
 ---
 
-## 2. Arquitetura
+## 2. Architecture
 
-**Abordagem:** Core Lib + múltiplos frontends.
+**Approach:** Core Lib + multiple frontends.
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                   Usuário                        │
+│                     User                         │
 ├──────────┬──────────┬──────────┬────────────────┤
-│  Plugin  │   CLI    │  Skills  │  Site/Web      │
-│ Obsidian │          │  (.md)   │  (futuro)      │
+│ Obsidian │   CLI    │  Skills  │   Site/Web     │
+│  Plugin  │          │  (.md)   │   (future)     │
 ├──────────┴──────────┴──────────┴────────────────┤
 │              Core Lib (TypeScript)               │
 │  ┌─────────┬──────────┬─────────┬─────────────┐ │
-│  │ Parser  │ Spaced   │ Metrics │ Content     │ │
-│  │ Vault   │ Rep(FSRS)│ Engine  │ Generator   │ │
+│  │ Vault   │ Spaced   │ Metrics │  Content    │ │
+│  │ Parser  │ Rep(FSRS)│ Engine  │  Generator  │ │
 │  └─────────┴──────────┴─────────┴─────────────┘ │
 ├─────────────────────────────────────────────────┤
 │           Vault (Markdown + Frontmatter)         │
 └─────────────────────────────────────────────────┘
 ```
 
-### Camadas
+### Layers
 
-**Core Lib** (TypeScript, agnóstica) — não importa Obsidian. Módulos:
-- **Vault Parser** — lê vault, indexa por frontmatter, resolve wikilinks
-- **Spaced Repetition Engine** — algoritmo FSRS, agenda de revisão
-- **Metrics Engine** — progresso por trilha/módulo, scores, retenção
-- **Content Generator** — templates para cards, quizzes, notas (sem IA — IA é do usuário)
+**Core Lib** (TypeScript, agnostic) — does not depend on Obsidian. Modules:
 
-**CLI** — primeira classe, não afterthought:
-- `estudeme init` — inicializa vault com estrutura e templates
-- `estudeme trail list/create/status` — gerencia trilhas
+- **Vault Parser** — walks the vault, indexes by frontmatter, resolves wikilinks
+- **Spaced Repetition Engine** — FSRS algorithm, review scheduling
+- **Metrics Engine** — progress per trail/module, scores, retention
+- **Content Generator** — templates for cards, quizzes, notes (no AI — AI belongs to the user)
+
+**CLI** — first-class, not an afterthought:
+
+- `estudeme init` — initialize vault with structure and templates
+- `estudeme trail list/create/status` — manage trails
 - `estudeme cards generate/review/export` — flashcards
 - `estudeme quiz generate/run` — quizzes
-- `estudeme metrics show` — dashboard de progresso
-- `estudeme site build/publish` — gera site do vault
-- `estudeme ingest` — delega para KB se instalado
+- `estudeme metrics show` — progress dashboard
+- `estudeme site build/publish` — generate site from vault
+- `estudeme ingest` — delegates to KB when available
 
-**Skills** — arquivos `.md` que ensinam agentes (Claude Code, Gemini, Copilot) a usar a CLI.
+**Skills** — `.md` files that teach agents (Claude Code, Gemini, Copilot) how to use the CLI.
 
-**Plugin Obsidian** — frontend visual, chama core lib diretamente.
+**Obsidian Plugin** — visual frontend, calls the core lib directly.
 
-**MCP Server** — expõe tools de estudo para qualquer agente compatível.
+**MCP Server** — exposes study tools to any MCP-compatible agent.
 
-**Site/Web** (futuro) — outro frontend, usa core lib ou API.
+**Site/Web** (future) — another frontend using the core lib or the API.
 
-### Integração com KB (Wendel)
+### KB Integration (Wendel)
 
-O LLM-knowledge-base (github.com/wendeus0/LLM-knowledge-base) é a engine de ingestão recomendada. MIT, Python, 223 testes, 96% cobertura. Faz: ingest → compile → Q&A → heal/lint. Output é Markdown com wikilinks.
+LLM-knowledge-base (github.com/wendeus0/LLM-knowledge-base) is the recommended ingestion engine. MIT, Python, 223 tests, 96% coverage. Pipeline: ingest → compile → Q&A → heal/lint. Output is Markdown with wikilinks.
 
-**Integração em 3 níveis:**
-1. KB como upstream documentado
-2. Skill que orquestra KB + EstudeMe
-3. `estudeme ingest` delega para KB se instalado
+**Three levels of integration:**
 
-Sem planos de internalizar ingestão. Futuramente, se outros sistemas surgirem, discutir padrão de interoperabilidade.
+1. KB as documented upstream
+2. A skill that orchestrates KB + EstudeMe
+3. `estudeme ingest` delegates to KB when installed
+
+No plan to internalize ingestion. If other systems emerge later, discuss an interoperability standard.
 
 ---
 
-## 3. Modelo de Dados
+## 3. Data Model
 
-**Princípio:** frontmatter como contrato, templates como conveniência. O plugin/CLI encontra conteúdo por metadata, não por localização. O usuário organiza pastas como quiser.
+**Principle:** frontmatter as contract, templates as convenience. The plugin/CLI finds content by metadata, not by location. Users organize folders however they want.
 
-### Tipos Core (MVP)
+### Core Types (MVP)
 
-**Trail (trilha)**
+**Trail**
+
 ```yaml
 ---
 type: trail
 title: "Java Backend"
-description: "Do zero ao deploy"
+description: "From zero to deploy"
 level: intermediate        # beginner | intermediate | advanced
-prerequisites: []          # wikilinks para outras trilhas
+prerequisites: []          # wikilinks to other trails
 tags: [java, backend]
 status: active             # active | completed | paused
 created: 2026-04-14
 ---
 ```
 
-**Module (módulo)**
+**Module**
+
 ```yaml
 ---
 type: module
-title: "Fundamentos Java"
+title: "Java Fundamentals"
 trail: "[[Java Backend]]"
 order: 1
 status: in-progress
 ---
 ```
 
-**Note (nota de estudo)**
+**Note**
+
 ```yaml
 ---
 type: note
-title: "Tipos Primitivos em Java"
+title: "Primitive Types in Java"
 trail: "[[Java Backend]]"
-module: "[[01 - Fundamentos Java]]"
+module: "[[01 - Java Fundamentals]]"
 difficulty: 1
-tags: [java, fundamentos]
+tags: [java, fundamentals]
 ---
 ```
 
 **Card (flashcard)**
+
 ```yaml
 ---
 type: card
 card-type: basic           # basic | cloze | vocab | scenario | pitfall
 trail: "[[Java Backend]]"
-module: "[[01 - Fundamentos Java]]"
-source: "[[Tipos Primitivos]]"
+module: "[[01 - Java Fundamentals]]"
+source: "[[Primitive Types]]"
 difficulty: 2
 ---
-## Frente
-Qual a diferença entre `int` e `Integer` em Java?
+## Front
+What is the difference between `int` and `Integer` in Java?
 
-## Verso
-`int` é tipo primitivo (stack, sem null). `Integer` é wrapper object (heap, nullable, autoboxing).
+## Back
+`int` is a primitive type (stack, no null). `Integer` is a wrapper object (heap, nullable, autoboxing).
 ```
 
 **Quiz**
+
 ```yaml
 ---
 type: quiz
-title: "Quiz - Fundamentos Java"
+title: "Quiz - Java Fundamentals"
 trail: "[[Java Backend]]"
-module: "[[01 - Fundamentos Java]]"
+module: "[[01 - Java Fundamentals]]"
 questions: 10
 passing-score: 70
 ---
 ```
 
-**Exam (simulado)**
+**Exam (mock test)**
+
 ```yaml
 ---
 type: exam
-title: "Simulado - Java SE 21 Certification"
+title: "Mock - Java SE 21 Certification"
 trail: "[[Java Backend]]"
-time-limit: 90             # minutos
+time-limit: 90             # minutes
 questions: 50
 passing-score: 68
-tags: [certificacao, oracle]
+tags: [certification, oracle]
 ---
 ```
 
-**Resource (referência externa)**
+**Resource (external reference)**
+
 ```yaml
 ---
 type: resource
@@ -195,305 +205,309 @@ rating: 4
 ---
 ```
 
-**Performance (gerado pelo sistema)**
+**Performance (generated by the system)**
+
 ```yaml
 ---
 type: performance
 date: 2026-04-14
 trail: "[[Java Backend]]"
-module: "[[01 - Fundamentos Java]]"
+module: "[[01 - Java Fundamentals]]"
 activity: card-review      # card-review | quiz | exam
 ---
 ```
 
-### Catálogo Extensível de Tipos
+### Extensible Type Catalog
 
-O sistema de tipos é aberto — frontmatter define o tipo, novos tipos podem ser adicionados sem mudar a arquitetura.
+The type system is open — frontmatter defines the type, and new types can be added without changing the architecture.
 
 - **Core (MVP):** trail, module, note, card, quiz, exam, performance, resource
-- **Notas do usuário:** atomic-note, literature-note, permanent-note, summary, cornell-note, mindmap, moc, glossary, learning-log
-- **Revisão:** card, cloze, quiz, feynman-explanation
-- **Prática:** exercise, code-kata, project, lab, mock-interview, case-study, challenge
-- **Avaliação:** exam, competency-checklist, self-assessment, certificate
-- **Planejamento:** trail, sprint, review-template, kanban
+- **User notes:** atomic-note, literature-note, permanent-note, summary, cornell-note, mindmap, moc, glossary, learning-log
+- **Review:** card, cloze, quiz, feynman-explanation
+- **Practice:** exercise, code-kata, project, lab, mock-interview, case-study, challenge
+- **Assessment:** exam, competency-checklist, self-assessment, certificate
+- **Planning:** trail, sprint, review-template, kanban
 
-### Dois papéis por recurso
+### Two roles per resource
 
-1. **Catalogar** (local, grátis) — registrar que o recurso existe, metadata
-2. **Processar** (API, pago) — resumo, fichamento, extração de cards, transcrição
+1. **Cataloging** (local, free) — register that the resource exists, metadata
+2. **Processing** (API, paid) — summary, note-taking, card extraction, transcription
 
-### Princípios do Modelo
+### Model Principles
 
-1. **Frontmatter como contrato** — o `type` define o que o sistema espera encontrar
-2. **Wikilinks para relações** — trail→module→note→card, tudo via `[[links]]`
-3. **Extensível** — novos types adicionados sem mudar arquitetura
-4. **Validável** — `estudeme validate` aponta frontmatter incompleto
-5. **Gerado e editável** — performance gerado pelo sistema, mas legível. Cards podem ser gerados por IA mas editados pelo usuário.
+1. **Frontmatter as contract** — `type` defines what the system expects
+2. **Wikilinks for relationships** — trail → module → note → card, all via `[[links]]`
+3. **Extensible** — new types added without architectural changes
+4. **Validatable** — `estudeme validate` flags incomplete frontmatter
+5. **Generated and editable** — `performance` is generated by the system but human-readable; cards may be AI-generated but remain editable
 
 ---
 
-## 4. Fases de Entrega
+## 4. Delivery Phases
 
-Cada fase entrega algo **usável e completo por si só**.
+Each phase delivers something **usable and complete on its own**.
 
-### Fase 0 — Fundação (Core Lib + CLI)
+### Phase 0 — Foundation (Core Lib + CLI)
 
-Monorepo `estudeme` com core lib e CLI funcionais. Vault codex como cobaia.
+Monorepo `estudeme` with working core lib and CLI. Vault codex-technomanticus as the test subject.
 
-- `estudeme init` — vault com templates e frontmatter padrão
-- `estudeme validate` — frontmatter, links quebrados, tipos
-- `estudeme trail list/status` — trilhas e progresso
-- `estudeme cards list/export` — lista cards, exporta `.apkg` (absorve arcana)
-- `estudeme metrics show` — dashboard no terminal
+- `estudeme init` — vault with templates and default frontmatter
+- `estudeme validate` — frontmatter, broken links, types
+- `estudeme trail list/status` — trails and progress
+- `estudeme cards list/export` — list cards, export `.apkg` (absorbs arcana)
+- `estudeme metrics show` — terminal dashboard
 
-**Critério:** você usa com seu vault. Skills funcionam com agentes.
+**Criterion:** you use it with your vault. Skills work with agents.
 
-### Fase 1 — Skills + IA do Usuário
+### Phase 1 — Skills + User's AI
 
-Skills que permitem agentes operar o sistema.
+Skills that let agents operate the system.
 
 - `estudeme-trail`, `estudeme-cards`, `estudeme-quiz`, `estudeme-ingest`
-- Todas chamam a CLI por baixo
+- All call the CLI under the hood
 
-**Critério:** estudante instala CLI + skills, conversa com Claude/Gemini, agente faz tudo.
+**Criterion:** a student installs CLI + skills, talks to Claude/Gemini, and the agent does the work.
 
-### Fase 2 — Revisão Espaçada + Quizzes Interativos
+### Phase 2 — Spaced Repetition + Interactive Quizzes
 
-Engine FSRS na core lib + comandos interativos na CLI.
+FSRS engine in the core lib + interactive commands in the CLI.
 
-- `estudeme review` — sessão de revisão de cards no terminal
-- `estudeme quiz run` — quiz interativo no terminal
-- Engine FSRS atualiza frontmatter dos cards
-- Performance registrada como notas tipo `performance`
-- Métricas de retenção e recomendações
+- `estudeme review` — card review session in the terminal
+- `estudeme quiz run` — interactive quiz in the terminal
+- FSRS engine updates card frontmatter
+- Performance recorded as `performance` notes
+- Retention metrics and recommendations
 
-**Critério:** ciclo completo de estudo via terminal/agente.
+**Criterion:** complete study loop via terminal/agent.
 
-### Fase 3 — Plugin Obsidian
+### Phase 3 — Obsidian Plugin
 
-Plugin que traz tudo para dentro do Obsidian com interface visual.
+Plugin that brings everything inside Obsidian with a visual interface.
 
-- 5 views: Painel CDF, Trail Map, Card Review, Quiz Runner, Dashboard
-- MCP Server para integração com agentes externos
-- Publicação no marketplace do Obsidian
+- 5 views: Study Buddy panel, Trail Map, Card Review, Quiz Runner, Dashboard
+- MCP Server for integration with external agents
+- Published to the Obsidian community marketplace
 
-**Critério:** plugin no marketplace, primeira visibilidade ampla.
+**Criterion:** plugin in the marketplace, first wide visibility.
 
-### Fase 4 — Gerador de Site
+### Phase 4 — Site Generator
 
-`estudeme site build/publish` — gera site estático com Quartz/Astro.
+`estudeme site build/publish` — static site generator via Quartz/Astro.
 
-- Renderiza trilhas como roadmaps visuais interativos
-- Cards e quizzes funcionam no browser
-- Deploy automático no GitHub Pages
-- Templates para diferentes perfis (estudante, professor, certificação)
+- Renders trails as interactive visual roadmaps
+- Cards and quizzes work in the browser
+- Automatic deploy to GitHub Pages
+- Templates for different profiles (student, teacher, certification)
 
-**Critério:** professores publicam material para alunos. codex-technomanticus-site é substituído por isso.
+**Criterion:** teachers publish materials for students. codex-technomanticus-site is replaced by this.
 
-### Fase 5 — Marketplace + API (SaaS)
+### Phase 5 — Marketplace + API (SaaS)
 
-Plataforma web para compartilhar/vender vaults + API de serviços.
+Web platform to share/sell vaults + services API.
 
-- **Marketplace:** browse, import com um clique, rating, reviews
-- **Tiers:** Free (1 trilha) / Pro (2-10) / Max (10+, compartilhamento, import)
-- **Pro:** acesso ao Colega CDF com nossa API (OpenRouter por trás)
-- **API B2B:** ingestão, resumos, fichamentos, avaliação de respostas abertas
-- **Mobile web:** revisão de cards e quizzes no browser mobile
+- **Marketplace:** browse, one-click import, rating, reviews
+- **Tiers:** Free (1 trail) / Pro (2-10) / Max (10+, sharing, import)
+- **Pro:** access to the Study Buddy using our API (OpenRouter under the hood)
+- **B2B API:** ingestion, summaries, note-taking, open-answer evaluation
+- **Mobile web:** card and quiz review in the mobile browser
 
-**Critério:** primeiro usuário pagante.
+**Criterion:** first paying customer.
 
 ---
 
-## 5. Stack Técnica
+## 5. Tech Stack
 
-### Estrutura do Monorepo
+### Monorepo Structure
 
 ```
 estudeme/
 ├── packages/
-│   ├── core/              ← Core Lib (TS, zero deps de Obsidian)
+│   ├── core/              ← Core Lib (TS, zero Obsidian deps)
 │   │   └── src/
-│   │       ├── parser/    ← lê vault, indexa frontmatter
-│   │       ├── spaced/    ← engine FSRS
-│   │       ├── metrics/   ← progresso, retenção, recomendações
-│   │       ├── content/   ← templates, geração
+│   │       ├── parser/    ← reads vault, indexes frontmatter
+│   │       ├── spaced/    ← FSRS engine
+│   │       ├── metrics/   ← progress, retention, recommendations
+│   │       ├── content/   ← templates, generation
 │   │       ├── export/    ← .apkg, JSON, CSV
-│   │       └── types/     ← schemas, validação
-│   ├── cli/               ← CLI (usa core)
+│   │       └── types/     ← schemas, validation
+│   ├── cli/               ← CLI (uses core)
 │   │   └── src/commands/  ← init, trail, cards, quiz, review, metrics, ingest, site, validate
-│   └── obsidian-plugin/   ← Plugin Obsidian (usa core)
+│   └── obsidian-plugin/   ← Obsidian plugin (uses core)
 │       └── src/
-│           ├── views/     ← Painel CDF, Trail Map, Cards, Quiz, Dashboard
+│           ├── views/     ← Study Buddy panel, Trail Map, Cards, Quiz, Dashboard
 │           └── commands/  ← command palette
-├── skills/                ← Skills para agentes
-├── templates/             ← Templates Obsidian (Templater-compatible)
+├── skills/                ← Skills for agents
+├── templates/             ← Obsidian templates (Templater-compatible)
 ├── docs/                  ← Specs, ADRs, guides
 ├── turbo.json
 ├── package.json           ← workspace root
 └── tsconfig.base.json
 ```
 
-### Escolhas Técnicas
+### Technical Choices
 
-| Decisão | Escolha | Por quê |
-|---------|---------|---------|
-| Linguagem | TypeScript | Plugin Obsidian é TS obrigatório |
-| Monorepo | Turborepo | Simples, rápido, caching |
-| Bundler core/cli | tsup | Build rápido, ESM + CJS |
-| Bundler plugin | esbuild | Padrão para plugins Obsidian |
-| Testes | Vitest | Rápido, ESM nativo |
-| CLI framework | Commander.js | Leve, maduro |
-| FSRS | ts-fsrs | FSRS-5 em TypeScript |
-| Export Anki | genanki-js (avaliar) | Gerar .apkg sem Python |
-| Lint | ESLint + Prettier | Padrão |
-| CI | GitHub Actions | Lint, test, build em PRs |
+| Decision          | Choice                | Why                                  |
+| ----------------- | --------------------- | ------------------------------------ |
+| Language          | TypeScript            | Obsidian plugin requires TS          |
+| Monorepo          | Turborepo             | Simple, fast, caching                |
+| Bundler core/cli  | tsup                  | Fast build, ESM + CJS                |
+| Bundler plugin    | esbuild               | Standard for Obsidian plugins        |
+| Tests             | Vitest                | Fast, native ESM                     |
+| CLI framework     | Commander.js          | Lightweight, mature                  |
+| FSRS              | ts-fsrs               | FSRS-5 in TypeScript                 |
+| Anki export       | genanki-js (evaluate) | Generate .apkg without Python        |
+| Lint              | ESLint + Prettier     | Standard                             |
+| CI                | GitHub Actions        | Lint, test, build on PRs             |
 
-### Integrações Externas
+### External Integrations
 
-| Ferramenta | Relação |
-|------------|---------|
-| KB (Wendel) | Engine de ingestão (CLI delega) |
-| Obsidian | Plataforma do plugin |
-| Quartz/Astro | Gerador de site (Fase 4) |
-| Anki | Export de cards |
-| OpenRouter | Backend de IA do Pro (Fase 5) |
+| Tool         | Relationship                     |
+| ------------ | -------------------------------- |
+| KB (Wendel)  | Ingestion engine (CLI delegates) |
+| Obsidian     | Plugin host                      |
+| Quartz/Astro | Site generator (Phase 4)         |
+| Anki         | Card export                      |
+| OpenRouter   | Pro AI backend (Phase 5)         |
 
-### O que NÃO está na stack (intencionalmente)
+### What is intentionally **not** in the stack
 
-- Banco de dados — tudo é Markdown + frontmatter
-- IA embutida — IA é do usuário (via agente/skills) ou do Pro (OpenRouter)
-- Framework web — só na Fase 5
+- No database — everything is Markdown + frontmatter
+- No embedded AI — AI belongs to the user (via agent/skills) or to Pro (OpenRouter)
+- No web framework — only arrives in Phase 5
 
 ---
 
-## 6. UX / Visual do Plugin
+## 6. Plugin UX / Visual
 
-### Princípio: Editor Sagrado, CDF como Ponto Único
+### Principle: The editor is sacred; the Study Buddy is the single touch point
 
-O plugin **não** interfere no editor do Obsidian. Toda interação é pelo painel lateral.
+The plugin **does not** interfere with the Obsidian editor. All interaction happens through the side panel.
 
-- Painel escondido → Obsidian puro
-- Painel aberto → estudando com o CDF
-- Seleção de texto → menu contextual (única exceção, ação voluntária)
-- Modo Estudo = conversa natural entre colegas no painel lateral
+- Panel hidden → pure Obsidian
+- Panel open → studying with the Study Buddy
+- Text selection → contextual menu (the only exception, and always user-initiated)
+- Study Mode = natural conversation between peers in the side panel
 
-### Posicionamento: Colega CDF, não Copilot
+### Positioning: Study Buddy, not Copilot
 
-Copilot ajuda a *fazer*. Colega CDF ajuda a *entender*. O estudante não quer um robô — quer um colega que estudou mais que ele.
+Copilot helps you *do*. The Study Buddy helps you *understand*. A student doesn't want a robot — they want a peer who studied more than they did.
 
 ### Views
 
-**1. Painel CDF (sidebar direita) — ponto único**
+**1. Study Buddy panel (right sidebar) — single entry point**
 
-Sempre visível. Contextual. Muda conforme o que está aberto:
-- Nota aberta → contexto da nota, cards relacionados, ações, chat
-- Card aberto → revisar, editar, ver fonte
-- Trilha aberta → progresso, recomendações
-- Sem nada aberto → home do estudante (cards de hoje, streak, próximos passos)
+Always visible. Contextual. Changes based on what is open:
 
-Estrutura:
-- 📊 Hoje (cards vencidos, streak, atalho para revisar)
-- 📋 Trilha ativa (barra de progresso, próximo passo)
-- 💬 Chat com o CDF (perguntas bidirecionais)
-- ⚡ Ações contextuais (gerar cards, criar quiz, etc.)
-- 🔗 Relacionados (notas próximas, anterior/próximo)
+- Note open → note context, related cards, actions, chat
+- Card open → review, edit, view source
+- Trail open → progress, recommendations
+- Nothing open → student home (cards due today, streak, next steps)
 
-**2. Trail Map (tab no editor)**
+Layout:
 
-Visualização de grafo da trilha (inspirada no roadmap.sh). Nós com cores por status (✅ completo, 🔄 em progresso, ⬚ não iniciado). Clicar abre o módulo.
+- 📊 Today (due cards, streak, review shortcut)
+- 📋 Active trail (progress bar, next step)
+- 💬 Chat with the Study Buddy (bidirectional questions)
+- ⚡ Contextual actions (generate cards, create quiz, etc.)
+- 🔗 Related (nearby notes, previous/next)
+
+**2. Trail Map (editor tab)**
+
+Trail visualization as a graph (inspired by roadmap.sh). Nodes colored by status (✅ complete, 🔄 in progress, ⬚ not started). Clicking opens the module.
 
 **3. Card Review (tab/modal)**
 
-Interface minimalista: pergunta → flip → avaliar (1-4 = De novo / Difícil / Bom / Fácil). Atalhos de teclado.
+Minimalist interface: question → flip → rate (1-4 = Again / Hard / Good / Easy). Keyboard shortcuts.
 
 **4. Quiz Runner (tab/modal)**
 
-Quiz interativo: pergunta + opções → confirmar → feedback imediato → próxima. Timer opcional para simulados.
+Interactive quiz: question + options → confirm → immediate feedback → next. Optional timer for mock tests.
 
 **5. Dashboard (tab)**
 
-Visão geral: streaks, trilhas em andamento, retenção dos últimos 30 dias, recomendações, atividade recente.
+High-level view: streaks, active trails, last-30-days retention, recommendations, recent activity.
 
-### Modo Estudo
+### Study Mode
 
-Quando ativo, o CDF percebe a nota aberta e faz perguntas no painel lateral, como um colega genuíno:
+When active, the Study Buddy reads the open note and asks questions in the side panel, like a genuine peer:
 
-> CDF: "Opa, vi que você tá lendo sobre primitivos. Bora ver se tá fixando? Quantos tipos primitivos Java tem?"
+> Study Buddy: "Hey, I see you're reading about primitives. Want to check if it's sticking? How many primitive types does Java have?"
 
-Aceita respostas abertas (avaliadas por IA) e múltipla escolha. Registra desempenho silenciosamente. O estudante também faz perguntas — bidirecional.
+Accepts open answers (evaluated by AI) and multiple choice. Records performance silently. The student also asks questions — bidirectional.
 
 ### Mobile (Obsidian Mobile)
 
-Mesmas views, layout adaptado:
-- Painel CDF → full-screen com swipe
-- Card Review → swipe left/right para avaliar
-- Quiz → botões touch-friendly
-- Trail Map → lista com indicadores (não grafo completo)
-- Dashboard → cards empilhados verticalmente
+Same views, adapted layout:
 
-### Integração de IA (3 níveis)
+- Study Buddy panel → full-screen with swipe gesture
+- Card Review → swipe left/right to rate
+- Quiz → touch-friendly buttons
+- Trail Map → list with indicators (not full graph)
+- Dashboard → vertically stacked cards
 
-1. **Free local** — usuário usa sua própria IA (API key OpenAI/Anthropic, Ollama local, agente CLI como Claude Code)
-2. **MCP Server** — qualquer agente compatível com MCP pode usar tools de estudo
-3. **Pro** — Colega CDF com nossa API (OpenRouter por trás), sem configuração, contexto integrado
+### AI Integration (3 tiers)
 
----
-
-## 7. Riscos e Mitigações
-
-| # | Risco | Probabilidade | Impacto | Mitigação |
-|---|-------|:------------:|:-------:|-----------|
-| 1 | Dependência do Obsidian | Baixa | Alto | Core lib separada — frontends substituíveis |
-| 2 | Escopo vs. equipe (1 pessoa, 6 fases) | Alta | Alto | Fases incrementais, cada uma é produto completo |
-| 3 | Custo de IA para o usuário | Média | Médio | IA opcional, modelos locais, Pro com preço fixo |
-| 4 | Cold start do marketplace | Média | Médio | Marketplace só na Fase 5; vaults próprios como semente |
-| 5 | "Mais um plugin de flashcard" | Média | Alto | Posicionamento: plataforma de estudo, não plugin de cards |
-| 6 | Performance com vaults grandes | Baixa | Médio | Cache, índice lazy, precedente do Dataview |
-| 7 | Obsidian Mobile limitado | Média | Médio | Teste early, site (Fase 4) como fallback mobile |
-
-### Detalhes-chave
-
-**Risco 2 (escopo):** Não é pra entregar tudo. É pra entregar a Fase 0 e ver o que acontece. Cada fase pode ser ponto final viável.
-
-**Risco 5 (posicionamento):** O diferencial não são os flashcards — é o **Colega CDF + analytics + orquestração**. Nenhum plugin existente combina chat conversacional contextual de estudo, métricas de retenção por trilha/módulo, e caminho para marketplace.
+1. **Free local** — user uses their own AI (OpenAI/Anthropic API key, local Ollama, CLI agents like Claude Code)
+2. **MCP Server** — any MCP-compatible agent can use study tools
+3. **Pro** — Study Buddy using our API (OpenRouter under the hood), no configuration, integrated context
 
 ---
 
-## 8. Relação com Repos Existentes
+## 7. Risks and Mitigations
 
-Os 3 repos atuais são sementes da ideia, não o produto final:
+| # | Risk                              | Probability | Impact | Mitigation                                                      |
+| - | --------------------------------- | :---------: | :----: | --------------------------------------------------------------- |
+| 1 | Dependency on Obsidian            | Low         | High   | Core lib is separate — frontends are replaceable                |
+| 2 | Scope vs. team (1 person, 6 phases) | High      | High   | Incremental phases, each one is a complete product              |
+| 3 | User cost of AI                   | Medium      | Medium | AI is optional, local models available, Pro has fixed pricing   |
+| 4 | Marketplace cold start            | Medium      | Medium | Marketplace only in Phase 5; own vaults as seed content         |
+| 5 | "Just another flashcard plugin"   | Medium      | High   | Positioning: study platform, not flashcard plugin               |
+| 6 | Performance on large vaults       | Low         | Medium | Cache, lazy index, Dataview precedent                           |
+| 7 | Obsidian Mobile limitations       | Medium      | Medium | Test early, site (Phase 4) as mobile fallback                   |
 
-- **codex-technomanticus** → primeiro vault de exemplo / proof of concept
-- **codex-technomanticus-site** → prova que publicação de vault como site funciona; será substituído pelo gerador da Fase 4
-- **codex-technomanticus-arcana** → prova que geração de cards funciona; existe como repo separado para compartilhar `.apkg` via GitHub releases. No futuro, export `.apkg` será feature do plugin
+### Key Points
+
+**Risk 2 (scope):** The goal is not to ship everything. The goal is to ship Phase 0 and see what happens. Each phase can be a viable stopping point.
+
+**Risk 5 (positioning):** The differentiator is not the flashcards — it's the **Study Buddy + analytics + orchestration**. No existing plugin combines contextual conversational study chat, retention metrics per trail/module, and a path toward a marketplace.
 
 ---
 
-## 9. Próximos Passos
+## 8. Relationship to Existing Repositories
 
-1. Aprovar este design
-2. Escrever plano de implementação detalhado da **Fase 0** (writing-plans skill)
-3. Iniciar implementação da Fase 0 no repo `estudeme`
-4. Validar com o vault codex-technomanticus
+The three existing repos are seeds of the idea, not the final product:
+
+- **codex-technomanticus** → first example vault / proof of concept
+- **codex-technomanticus-site** → proof that publishing a vault as a site works; will be replaced by the Phase 4 generator
+- **codex-technomanticus-arcana** → proof that card generation works; exists as a separate repo to share `.apkg` via GitHub releases. In the future, `.apkg` export becomes a plugin feature
 
 ---
 
-## Apêndice A — Inspirações e Referências
+## 9. Next Steps
 
-- **Karpathy's memory/second brain** — ingestão inteligente, /raw folder, "humano cura, máquina faz o resto"
-- **graphify** (safishamsi) — knowledge graph de qualquer pasta, 71.5x menos tokens
-- **MemPalace** (Milla Jovovich) — memória verbatim com ChromaDB, arquitetura palace
-- **LLM-knowledge-base** (Wendel) — engine de ingestão, parceiro direto
-- **flashcards-obsidian** (reuseman) — integração Anki, MIT
-- **obsidian-spaced-repetition** — mais maduro, FSRS
-- **Quiz Generator** — IA-powered quizzes
-- **roadmap.sh** — roadmaps visuais, tracking por clique, dois eixos (papel + skill)
-- **Copilot for Obsidian** / **BMO Chatbot** — chat sidebar como referência de UX
+1. Approve this design
+2. Write a detailed implementation plan for **Phase 0** (writing-plans skill)
+3. Start Phase 0 implementation in the `estudeme` repo
+4. Validate against the codex-technomanticus vault
 
-## Apêndice B — Origem da Ideia
+---
 
-Surgiu de conversa no grupo RESPEITOSO TECH (2026-04-13). Múltiplas pessoas convergindo para a mesma necessidade por caminhos diferentes — sinal de validação real de mercado.
+## Appendix A — Inspirations and References
 
-## Apêndice C — Status
+- **Karpathy's memory / second brain** — intelligent ingestion, /raw folder, "humans curate, machines do the rest"
+- **graphify** (safishamsi) — knowledge graph of any folder, 71.5x fewer tokens
+- **MemPalace** (Milla Jovovich) — verbatim memory with ChromaDB, palace architecture
+- **LLM-knowledge-base** (Wendel) — ingestion engine, direct partner
+- **flashcards-obsidian** (reuseman) — Anki integration, MIT
+- **obsidian-spaced-repetition** — mature, FSRS
+- **Quiz Generator** — AI-powered quizzes
+- **roadmap.sh** — visual roadmaps, click tracking, two axes (role + skill)
+- **Copilot for Obsidian** / **BMO Chatbot** — chat sidebar as UX reference
 
-Fase de brainstorming/ideação concluída. Aguardando aprovação para iniciar plano de implementação da Fase 0.
+## Appendix B — Origin of the Idea
+
+Emerged from a conversation in the RESPEITOSO TECH group (2026-04-13). Multiple people converging on the same need from different paths — a signal of real market validation.
+
+## Appendix C — Status
+
+Brainstorming / ideation phase complete. Awaiting approval to start the Phase 0 implementation plan.

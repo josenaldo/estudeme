@@ -1,16 +1,16 @@
-# Fase 0 — Fundação (Core Lib + CLI) — Plano de Implementação
+# Phase 0 — Foundation (Core Lib + CLI) — Implementation Plan
 
-> **Para agentes:** SUB-SKILL OBRIGATÓRIA: Use `superpowers:subagent-driven-development` (recomendado) ou `superpowers:executing-plans` para implementar este plano tarefa por tarefa. Steps usam sintaxe de checkbox (`- [ ]`) para tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Objetivo:** Construir a base do EstudeMe — monorepo TypeScript com core lib (parser, validação, métricas, export Anki) e CLI funcional (`init`, `validate`, `trail`, `cards`, `metrics`), validados contra o vault codex-technomanticus.
+**Goal:** Build the EstudeMe foundation — a TypeScript monorepo with a core lib (parser, validation, metrics, card export) and a working CLI (`init`, `validate`, `trail`, `cards`, `metrics`), validated against the codex-technomanticus vault.
 
-**Arquitetura:** Monorepo Turborepo com 2 packages: `@estudeme/core` (agnóstico, zero deps de Obsidian) e `@estudeme/cli` (Commander.js, usa core). Modelo de dados: Markdown + frontmatter YAML, índice por type. TDD em todos os módulos do core.
+**Architecture:** Turborepo monorepo with 2 packages: `@estudeme/core` (agnostic, zero Obsidian dependencies) and `@estudeme/cli` (Commander.js, uses core). Data model: Markdown + YAML frontmatter, indexed by type. TDD for all core modules.
 
-**Tech Stack:** TypeScript 5.x, Node.js 22+, Turborepo, tsup (bundler), Vitest (testes), Commander.js (CLI), gray-matter (frontmatter), js-yaml, ESLint, Prettier, GitHub Actions.
+**Tech Stack:** TypeScript 5.x, Node.js 22+, Turborepo, tsup (bundler), Vitest (tests), Commander.js (CLI), gray-matter (frontmatter), js-yaml, ESLint, Prettier, GitHub Actions.
 
 ---
 
-## Estrutura de Arquivos
+## File Structure
 
 ```
 estudeme/
@@ -31,81 +31,41 @@ estudeme/
 │   │   ├── tsup.config.ts
 │   │   ├── vitest.config.ts
 │   │   ├── src/
-│   │   │   ├── index.ts                     # exports públicos
-│   │   │   ├── types/
-│   │   │   │   ├── index.ts                 # re-exports
-│   │   │   │   ├── base.ts                  # tipos compartilhados
-│   │   │   │   ├── trail.ts
-│   │   │   │   ├── module.ts
-│   │   │   │   ├── note.ts
-│   │   │   │   ├── card.ts
-│   │   │   │   ├── quiz.ts
-│   │   │   │   ├── exam.ts
-│   │   │   │   ├── resource.ts
-│   │   │   │   └── performance.ts
-│   │   │   ├── parser/
-│   │   │   │   ├── index.ts
-│   │   │   │   ├── frontmatter.ts           # parse YAML frontmatter
-│   │   │   │   ├── wikilinks.ts             # extract [[wikilinks]]
-│   │   │   │   ├── document.ts              # parse 1 .md file
-│   │   │   │   └── vault.ts                 # walk vault, build index
-│   │   │   ├── validation/
-│   │   │   │   ├── index.ts
-│   │   │   │   ├── schemas.ts               # schemas por type
-│   │   │   │   └── validate.ts              # validate documento
-│   │   │   ├── metrics/
-│   │   │   │   ├── index.ts
-│   │   │   │   └── progress.ts              # progresso por trail/module
-│   │   │   └── export/
-│   │   │       ├── index.ts
-│   │   │       └── anki.ts                  # export para .apkg
+│   │   │   ├── index.ts
+│   │   │   ├── types/ (base, trail, module, note, card, quiz, exam, resource, performance)
+│   │   │   ├── parser/ (frontmatter, wikilinks, document, vault)
+│   │   │   ├── validation/ (schemas, validate)
+│   │   │   ├── metrics/ (progress)
+│   │   │   └── export/ (anki)
 │   │   └── tests/
-│   │       ├── fixtures/                    # vaults de teste
+│   │       ├── fixtures/sample-vault/
 │   │       ├── parser/
 │   │       ├── validation/
 │   │       ├── metrics/
 │   │       └── export/
 │   │
 │   └── cli/
-│       ├── package.json
-│       ├── tsconfig.json
-│       ├── tsup.config.ts
-│       ├── vitest.config.ts
+│       ├── package.json, tsconfig.json, tsup.config.ts, vitest.config.ts
 │       ├── src/
-│       │   ├── index.ts                     # entry point (#!/usr/bin/env node)
-│       │   ├── commands/
-│       │   │   ├── init.ts
-│       │   │   ├── validate.ts
-│       │   │   ├── trail.ts
-│       │   │   ├── cards.ts
-│       │   │   └── metrics.ts
-│       │   └── lib/
-│       │       ├── format.ts                # cores, tabelas terminal
-│       │       └── vault-loader.ts          # encontra/carrega vault
-│       ├── templates/                       # arquivos .md template para init
-│       │   ├── trail.md
-│       │   ├── module.md
-│       │   ├── note.md
-│       │   ├── card.md
-│       │   └── quiz.md
-│       └── tests/
-│           └── commands/
+│       │   ├── index.ts
+│       │   ├── commands/ (init, validate, trail, cards, metrics)
+│       │   └── lib/ (format, vault-loader)
+│       ├── templates/ (trail.md, module.md, note.md, card.md, quiz.md)
+│       └── tests/commands/
 │
 └── docs/
-    ├── superpowers/specs/
-    │   └── 2026-04-14-estudeme-design.md    # já existe
-    └── superpowers/plans/
-        └── 2026-04-14-fase-0-fundacao.md    # este arquivo
+    ├── superpowers/specs/2026-04-14-estudeme-design.md
+    └── superpowers/plans/2026-04-14-phase-0-foundation.md
 ```
 
 ---
 
-## Tarefa 1: Setup do Monorepo
+## Task 1: Monorepo Setup
 
 **Files:**
 - Create: `package.json`, `turbo.json`, `tsconfig.base.json`, `.gitignore`, `.editorconfig`, `.prettierrc`, `eslint.config.js`, `README.md`
 
-- [ ] **Step 1.1: Criar `.gitignore`**
+- [ ] **Step 1.1: Create `.gitignore`**
 
 ```gitignore
 node_modules/
@@ -119,14 +79,14 @@ coverage/
 *.tsbuildinfo
 ```
 
-- [ ] **Step 1.2: Criar `package.json` raiz**
+- [ ] **Step 1.2: Create root `package.json`**
 
 ```json
 {
   "name": "estudeme",
   "version": "0.0.0",
   "private": true,
-  "description": "Plataforma open-core de estudo autodidata",
+  "description": "Open-core self-directed learning platform",
   "license": "MIT",
   "author": "Josenaldo de Oliveira Matos Filho",
   "workspaces": ["packages/*"],
@@ -146,37 +106,26 @@ coverage/
     "@typescript-eslint/eslint-plugin": "^8.0.0"
   },
   "packageManager": "npm@10.0.0",
-  "engines": {
-    "node": ">=22.0.0"
-  }
+  "engines": { "node": ">=22.0.0" }
 }
 ```
 
-- [ ] **Step 1.3: Criar `turbo.json`**
+- [ ] **Step 1.3: Create `turbo.json`**
 
 ```json
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
-    },
-    "test": {
-      "dependsOn": ["^build"]
-    },
+    "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] },
+    "test": { "dependsOn": ["^build"] },
     "lint": {},
-    "typecheck": {
-      "dependsOn": ["^build"]
-    },
-    "clean": {
-      "cache": false
-    }
+    "typecheck": { "dependsOn": ["^build"] },
+    "clean": { "cache": false }
   }
 }
 ```
 
-- [ ] **Step 1.4: Criar `tsconfig.base.json`**
+- [ ] **Step 1.4: Create `tsconfig.base.json`**
 
 ```json
 {
@@ -202,7 +151,7 @@ coverage/
 }
 ```
 
-- [ ] **Step 1.5: Criar `.editorconfig`, `.prettierrc`, `eslint.config.js`**
+- [ ] **Step 1.5: Create `.editorconfig`, `.prettierrc`, `eslint.config.js`**
 
 `.editorconfig`:
 ```ini
@@ -241,76 +190,66 @@ export default [
     files: ['**/*.ts'],
     languageOptions: {
       parser: tsparser,
-      parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: 'module',
-      },
+      parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
     },
-    plugins: {
-      '@typescript-eslint': tseslint,
-    },
+    plugins: { '@typescript-eslint': tseslint },
     rules: {
       ...tseslint.configs['recommended'].rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
-  {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/*.config.ts', '**/*.config.js'],
-  },
+  { ignores: ['**/dist/**', '**/node_modules/**', '**/*.config.ts', '**/*.config.js'] },
 ];
 ```
 
-- [ ] **Step 1.6: Criar `README.md` mínimo**
+- [ ] **Step 1.6: Create minimal `README.md`**
 
 ```markdown
 # EstudeMe
 
-Plataforma open-core de estudo autodidata. Vault Markdown + frontmatter como formato universal de dados.
+Open-core self-directed learning platform. Markdown vault + frontmatter as the universal data format.
 
 ## Status
 
-Em desenvolvimento — Fase 0 (Fundação).
+Under development — Phase 0 (Foundation).
 
-Veja o [design doc](docs/superpowers/specs/2026-04-14-estudeme-design.md).
+See the [design doc](docs/superpowers/specs/2026-04-14-estudeme-design.md).
 
-## Licença
+## License
 
 MIT
 ```
 
-- [ ] **Step 1.7: Instalar dependências e commitar**
+- [ ] **Step 1.7: Install deps and commit**
 
 ```bash
 npm install
 git add .
-git commit -m "chore: setup monorepo Turborepo + TypeScript"
+git commit -m "chore: setup Turborepo + TypeScript monorepo"
 ```
 
-Expected: `npm install` cria `node_modules/` e `package-lock.json`. Sem erros.
+Expected: `npm install` creates `node_modules/` and `package-lock.json`. No errors.
 
 ---
 
-## Tarefa 2: Setup do Package `@estudeme/core`
+## Task 2: `@estudeme/core` Package Setup
 
 **Files:**
 - Create: `packages/core/package.json`, `packages/core/tsconfig.json`, `packages/core/tsup.config.ts`, `packages/core/vitest.config.ts`, `packages/core/src/index.ts`
 
-- [ ] **Step 2.1: Criar `packages/core/package.json`**
+- [ ] **Step 2.1: Create `packages/core/package.json`**
 
 ```json
 {
   "name": "@estudeme/core",
   "version": "0.0.0",
-  "description": "Core library do EstudeMe — parser, validação, métricas",
+  "description": "EstudeMe core library — parser, validation, metrics",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" }
   },
   "files": ["dist"],
   "scripts": {
@@ -334,21 +273,18 @@ Expected: `npm install` cria `node_modules/` e `package-lock.json`. Sem erros.
 }
 ```
 
-- [ ] **Step 2.2: Criar `packages/core/tsconfig.json`**
+- [ ] **Step 2.2: Create `packages/core/tsconfig.json`**
 
 ```json
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src"
-  },
+  "compilerOptions": { "outDir": "./dist", "rootDir": "./src" },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules", "tests"]
 }
 ```
 
-- [ ] **Step 2.3: Criar `packages/core/tsup.config.ts`**
+- [ ] **Step 2.3: Create `packages/core/tsup.config.ts`**
 
 ```ts
 import { defineConfig } from 'tsup';
@@ -363,7 +299,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 2.4: Criar `packages/core/vitest.config.ts`**
+- [ ] **Step 2.4: Create `packages/core/vitest.config.ts`**
 
 ```ts
 import { defineConfig } from 'vitest/config';
@@ -382,13 +318,13 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 2.5: Criar `packages/core/src/index.ts` placeholder**
+- [ ] **Step 2.5: Create `packages/core/src/index.ts` placeholder**
 
 ```ts
 export const VERSION = '0.0.0';
 ```
 
-- [ ] **Step 2.6: Instalar deps e validar build**
+- [ ] **Step 2.6: Install deps and validate build**
 
 ```bash
 npm install
@@ -396,65 +332,65 @@ npm run -w @estudeme/core build
 npm run -w @estudeme/core typecheck
 ```
 
-Expected: build cria `packages/core/dist/index.js` e `index.d.ts`. typecheck passa.
+Expected: build creates `packages/core/dist/index.js` and `index.d.ts`. typecheck passes.
 
 - [ ] **Step 2.7: Commit**
 
 ```bash
 git add packages/core/
-git commit -m "chore(core): setup package @estudeme/core"
+git commit -m "chore(core): setup @estudeme/core package"
 ```
 
 ---
 
-## Tarefa 3: Definir Tipos Base
+## Task 3: Base Types
 
 **Files:**
 - Create: `packages/core/src/types/base.ts`, `packages/core/src/types/index.ts`
 - Test: `packages/core/tests/types/base.test.ts`
 
-- [ ] **Step 3.1: Escrever teste para tipos base**
+- [ ] **Step 3.1: Write test for base types**
 
 `packages/core/tests/types/base.test.ts`:
 ```ts
 import { describe, it, expect } from 'vitest';
 import type { DocumentType, Difficulty, Status, Wikilink } from '../../src/types/base.js';
 
-describe('Tipos base', () => {
-  it('aceita DocumentType valido', () => {
+describe('Base types', () => {
+  it('accepts valid DocumentType', () => {
     const t: DocumentType = 'trail';
     expect(t).toBe('trail');
   });
 
-  it('aceita Difficulty no range 1-5', () => {
+  it('accepts Difficulty in the 1-5 range', () => {
     const d: Difficulty = 3;
     expect(d).toBeGreaterThanOrEqual(1);
     expect(d).toBeLessThanOrEqual(5);
   });
 
-  it('Status aceita active/completed/paused/in-progress', () => {
+  it('Status accepts active/completed/paused/in-progress/not-started', () => {
     const s: Status = 'active';
     expect(['active', 'completed', 'paused', 'in-progress', 'not-started']).toContain(s);
   });
 
-  it('Wikilink eh string com formato [[texto]]', () => {
+  it('Wikilink is a string in [[text]] format', () => {
     const w: Wikilink = '[[Java Backend]]';
     expect(w).toMatch(/^\[\[.+\]\]$/);
   });
 });
 ```
 
-- [ ] **Step 3.2: Rodar teste, esperar falha**
+- [ ] **Step 3.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/core test -- types/base`
-Expected: FAIL — arquivo `base.ts` não existe.
+Expected: FAIL — `base.ts` does not exist.
 
-- [ ] **Step 3.3: Implementar tipos base**
+- [ ] **Step 3.3: Implement base types**
 
 `packages/core/src/types/base.ts`:
 ```ts
 /**
- * Tipos extensiveis — adicionar novos tipos sem mudar arquitetura.
+ * Extensible types — new types can be added without architectural changes.
  */
 export type DocumentType =
   | 'trail'
@@ -465,7 +401,7 @@ export type DocumentType =
   | 'exam'
   | 'resource'
   | 'performance'
-  | string; // permite tipos custom
+  | string;
 
 export type Difficulty = 1 | 2 | 3 | 4 | 5;
 
@@ -476,32 +412,32 @@ export type Status =
   | 'in-progress'
   | 'not-started';
 
-export type Wikilink = string; // formato: "[[texto]]"
+export type Wikilink = string;
 
 export interface BaseFrontmatter {
   type: DocumentType;
   title: string;
   tags?: string[];
-  created?: string; // YYYY-MM-DD
+  created?: string;
   updated?: string;
 }
 
 export interface ParsedDocument<T extends BaseFrontmatter = BaseFrontmatter> {
-  path: string;          // caminho absoluto
-  relativePath: string;  // relativo ao vault root
+  path: string;
+  relativePath: string;
   frontmatter: T;
-  content: string;       // conteudo markdown sem frontmatter
-  wikilinks: string[];   // links extraidos do conteudo
+  content: string;
+  wikilinks: string[];
 }
 ```
 
-- [ ] **Step 3.4: Criar `packages/core/src/types/index.ts`**
+- [ ] **Step 3.4: Create `packages/core/src/types/index.ts`**
 
 ```ts
 export * from './base.js';
 ```
 
-- [ ] **Step 3.5: Rodar teste, esperar pass**
+- [ ] **Step 3.5: Run test, expect pass**
 
 Run: `npm run -w @estudeme/core test -- types/base`
 Expected: PASS (4 tests).
@@ -510,75 +446,61 @@ Expected: PASS (4 tests).
 
 ```bash
 git add packages/core/src/types/ packages/core/tests/types/
-git commit -m "feat(core): tipos base e ParsedDocument"
+git commit -m "feat(core): base types and ParsedDocument"
 ```
 
 ---
 
-## Tarefa 4: Tipos Específicos (Trail, Module, Note, Card, Quiz, Exam, Resource, Performance)
+## Task 4: Specific Types
 
 **Files:**
 - Create: `packages/core/src/types/{trail,module,note,card,quiz,exam,resource,performance}.ts`
 - Modify: `packages/core/src/types/index.ts`
 - Test: `packages/core/tests/types/specific.test.ts`
 
-- [ ] **Step 4.1: Escrever teste para tipos específicos**
+- [ ] **Step 4.1: Write test for specific types**
 
 `packages/core/tests/types/specific.test.ts`:
 ```ts
 import { describe, it, expect } from 'vitest';
 import type {
-  TrailFrontmatter,
-  ModuleFrontmatter,
-  NoteFrontmatter,
-  CardFrontmatter,
-  QuizFrontmatter,
-  ExamFrontmatter,
-  ResourceFrontmatter,
-  PerformanceFrontmatter,
+  TrailFrontmatter, ModuleFrontmatter, NoteFrontmatter, CardFrontmatter,
+  QuizFrontmatter, ExamFrontmatter, ResourceFrontmatter, PerformanceFrontmatter,
 } from '../../src/types/index.js';
 
-describe('Tipos especificos', () => {
-  it('TrailFrontmatter tem type=trail e level', () => {
+describe('Specific types', () => {
+  it('TrailFrontmatter has type=trail and level', () => {
     const t: TrailFrontmatter = {
-      type: 'trail',
-      title: 'Java Backend',
-      level: 'intermediate',
-      status: 'active',
+      type: 'trail', title: 'Java Backend', level: 'intermediate', status: 'active',
     };
     expect(t.type).toBe('trail');
     expect(t.level).toBe('intermediate');
   });
 
-  it('CardFrontmatter tem card-type e source opcional', () => {
+  it('CardFrontmatter has card-type and optional source', () => {
     const c: CardFrontmatter = {
-      type: 'card',
-      title: 'int vs Integer',
-      'card-type': 'basic',
-      trail: '[[Java Backend]]',
-      difficulty: 2,
+      type: 'card', title: 'int vs Integer', 'card-type': 'basic',
+      trail: '[[Java Backend]]', difficulty: 2,
     };
     expect(c['card-type']).toBe('basic');
   });
 
-  it('PerformanceFrontmatter tem activity e date', () => {
+  it('PerformanceFrontmatter has activity and date', () => {
     const p: PerformanceFrontmatter = {
-      type: 'performance',
-      title: 'Review 2026-04-14',
-      date: '2026-04-14',
-      activity: 'card-review',
+      type: 'performance', title: 'Review 2026-04-14',
+      date: '2026-04-14', activity: 'card-review',
     };
     expect(p.activity).toBe('card-review');
   });
 });
 ```
 
-- [ ] **Step 4.2: Rodar teste, esperar falha**
+- [ ] **Step 4.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/core test -- types/specific`
-Expected: FAIL — tipos não definidos.
+Expected: FAIL.
 
-- [ ] **Step 4.3: Implementar tipos**
+- [ ] **Step 4.3: Implement types**
 
 `packages/core/src/types/trail.ts`:
 ```ts
@@ -630,7 +552,6 @@ export interface CardFrontmatter extends BaseFrontmatter {
   module?: Wikilink;
   source?: Wikilink;
   difficulty?: Difficulty;
-  // FSRS state — adicionado em Fase 2
   due?: string;
   interval?: number;
   reps?: number;
@@ -647,7 +568,7 @@ export interface QuizFrontmatter extends BaseFrontmatter {
   trail?: Wikilink;
   module?: Wikilink;
   questions: number;
-  'passing-score': number; // percentual 0-100
+  'passing-score': number;
 }
 ```
 
@@ -659,7 +580,7 @@ export interface ExamFrontmatter extends BaseFrontmatter {
   type: 'exam';
   trail?: Wikilink;
   questions: number;
-  'time-limit': number; // minutos
+  'time-limit': number;
   'passing-score': number;
 }
 ```
@@ -669,22 +590,11 @@ export interface ExamFrontmatter extends BaseFrontmatter {
 import type { BaseFrontmatter, Wikilink } from './base.js';
 
 export type ResourceType =
-  | 'video'
-  | 'book'
-  | 'article'
-  | 'course'
-  | 'podcast'
-  | 'paper'
-  | 'documentation'
-  | 'cheatsheet'
-  | 'repo';
+  | 'video' | 'book' | 'article' | 'course' | 'podcast'
+  | 'paper' | 'documentation' | 'cheatsheet' | 'repo';
 
 export type ResourceStatus =
-  | 'to-consume'
-  | 'in-progress'
-  | 'consumed'
-  | 'watched'
-  | 'read';
+  | 'to-consume' | 'in-progress' | 'consumed' | 'watched' | 'read';
 
 export interface ResourceFrontmatter extends BaseFrontmatter {
   type: 'resource';
@@ -705,16 +615,16 @@ export type Activity = 'card-review' | 'quiz' | 'exam' | 'study-session';
 
 export interface PerformanceFrontmatter extends BaseFrontmatter {
   type: 'performance';
-  date: string; // YYYY-MM-DD
+  date: string;
   trail?: Wikilink;
   module?: Wikilink;
   activity: Activity;
   score?: number;
-  duration?: number; // segundos
+  duration?: number;
 }
 ```
 
-- [ ] **Step 4.4: Atualizar `packages/core/src/types/index.ts`**
+- [ ] **Step 4.4: Update `packages/core/src/types/index.ts`**
 
 ```ts
 export * from './base.js';
@@ -728,27 +638,27 @@ export * from './resource.js';
 export * from './performance.js';
 ```
 
-- [ ] **Step 4.5: Rodar teste, esperar pass**
+- [ ] **Step 4.5: Run test, expect pass**
 
 Run: `npm run -w @estudeme/core test -- types/`
-Expected: PASS (todos os tests de tipos).
+Expected: PASS.
 
 - [ ] **Step 4.6: Commit**
 
 ```bash
 git add packages/core/src/types/ packages/core/tests/types/
-git commit -m "feat(core): tipos especificos (trail, module, note, card, quiz, exam, resource, performance)"
+git commit -m "feat(core): specific types (trail, module, note, card, quiz, exam, resource, performance)"
 ```
 
 ---
 
-## Tarefa 5: Parser de Frontmatter
+## Task 5: Frontmatter Parser
 
 **Files:**
 - Create: `packages/core/src/parser/frontmatter.ts`
 - Test: `packages/core/tests/parser/frontmatter.test.ts`
 
-- [ ] **Step 5.1: Escrever teste**
+- [ ] **Step 5.1: Write test**
 
 `packages/core/tests/parser/frontmatter.test.ts`:
 ```ts
@@ -756,32 +666,32 @@ import { describe, it, expect } from 'vitest';
 import { parseFrontmatter } from '../../src/parser/frontmatter.js';
 
 describe('parseFrontmatter', () => {
-  it('extrai frontmatter YAML do markdown', () => {
+  it('extracts YAML frontmatter from markdown', () => {
     const input = `---
 type: note
-title: "Tipos Primitivos"
-tags: [java, fundamentos]
+title: "Primitive Types"
+tags: [java, fundamentals]
 ---
 
-# Conteudo
+# Content
 
-Texto da nota.`;
+Note body.`;
 
     const { data, content } = parseFrontmatter(input);
     expect(data.type).toBe('note');
-    expect(data.title).toBe('Tipos Primitivos');
-    expect(data.tags).toEqual(['java', 'fundamentos']);
-    expect(content.trim()).toBe('# Conteudo\n\nTexto da nota.');
+    expect(data.title).toBe('Primitive Types');
+    expect(data.tags).toEqual(['java', 'fundamentals']);
+    expect(content.trim()).toBe('# Content\n\nNote body.');
   });
 
-  it('retorna data vazio quando nao ha frontmatter', () => {
-    const input = '# Sem frontmatter\n\nApenas conteudo.';
+  it('returns empty data when there is no frontmatter', () => {
+    const input = '# No frontmatter\n\nJust content.';
     const { data, content } = parseFrontmatter(input);
     expect(data).toEqual({});
-    expect(content.trim()).toBe('# Sem frontmatter\n\nApenas conteudo.');
+    expect(content.trim()).toBe('# No frontmatter\n\nJust content.');
   });
 
-  it('lanca erro com YAML invalido', () => {
+  it('throws on invalid YAML', () => {
     const input = `---
 type: note
 title: "unclosed
@@ -792,12 +702,12 @@ content`;
 });
 ```
 
-- [ ] **Step 5.2: Rodar teste, esperar falha**
+- [ ] **Step 5.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/core test -- parser/frontmatter`
-Expected: FAIL — arquivo não existe.
+Expected: FAIL.
 
-- [ ] **Step 5.3: Implementar parser**
+- [ ] **Step 5.3: Implement parser**
 
 `packages/core/src/parser/frontmatter.ts`:
 ```ts
@@ -809,23 +719,7 @@ export interface ParsedFrontmatter {
 }
 
 export function parseFrontmatter(raw: string): ParsedFrontmatter {
-  const result = matter(raw, {
-    engines: {
-      yaml: {
-        parse: (str: string) => {
-          // gray-matter usa js-yaml por baixo; lanca em YAML invalido
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
-          const yaml = require('js-yaml');
-          return yaml.load(str, { schema: yaml.JSON_SCHEMA });
-        },
-        stringify: (obj: unknown) => {
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
-          const yaml = require('js-yaml');
-          return yaml.dump(obj);
-        },
-      },
-    },
-  });
+  const result = matter(raw);
   return {
     data: result.data as Record<string, unknown>,
     content: result.content,
@@ -833,29 +727,27 @@ export function parseFrontmatter(raw: string): ParsedFrontmatter {
 }
 ```
 
-Nota: `gray-matter` por padrão usa js-yaml e já lança em YAML inválido. A configuração explícita acima é defensiva. Se vier a causar problema com require em ESM, simplificar para `return matter(raw)` sem engines customizadas.
-
-- [ ] **Step 5.4: Rodar teste, esperar pass**
+- [ ] **Step 5.4: Run test, expect pass**
 
 Run: `npm run -w @estudeme/core test -- parser/frontmatter`
-Expected: PASS (3 tests).
+Expected: PASS.
 
 - [ ] **Step 5.5: Commit**
 
 ```bash
 git add packages/core/src/parser/frontmatter.ts packages/core/tests/parser/frontmatter.test.ts
-git commit -m "feat(core): parser de frontmatter YAML"
+git commit -m "feat(core): YAML frontmatter parser"
 ```
 
 ---
 
-## Tarefa 6: Extrator de Wikilinks
+## Task 6: Wikilink Extractor
 
 **Files:**
 - Create: `packages/core/src/parser/wikilinks.ts`
 - Test: `packages/core/tests/parser/wikilinks.test.ts`
 
-- [ ] **Step 6.1: Escrever teste**
+- [ ] **Step 6.1: Write test**
 
 `packages/core/tests/parser/wikilinks.test.ts`:
 ```ts
@@ -863,73 +755,62 @@ import { describe, it, expect } from 'vitest';
 import { extractWikilinks, normalizeWikilink } from '../../src/parser/wikilinks.js';
 
 describe('extractWikilinks', () => {
-  it('extrai wikilinks simples', () => {
-    const input = 'Veja [[Java Backend]] e [[Spring Boot]].';
-    expect(extractWikilinks(input)).toEqual(['Java Backend', 'Spring Boot']);
+  it('extracts simple wikilinks', () => {
+    expect(extractWikilinks('See [[Java Backend]] and [[Spring Boot]].'))
+      .toEqual(['Java Backend', 'Spring Boot']);
   });
 
-  it('extrai wikilinks com alias (pega target)', () => {
-    const input = 'Veja [[Java Backend|backend java]].';
-    expect(extractWikilinks(input)).toEqual(['Java Backend']);
+  it('extracts wikilinks with alias (keeps target)', () => {
+    expect(extractWikilinks('See [[Java Backend|java backend]].'))
+      .toEqual(['Java Backend']);
   });
 
-  it('extrai wikilinks com header (pega so o file)', () => {
-    const input = 'Veja [[Java Backend#Spring]].';
-    expect(extractWikilinks(input)).toEqual(['Java Backend']);
+  it('extracts wikilinks with header (keeps file only)', () => {
+    expect(extractWikilinks('See [[Java Backend#Spring]].'))
+      .toEqual(['Java Backend']);
   });
 
-  it('ignora codigo embedded (ainda assim extrai — escopo simples)', () => {
-    // versao MVP: extrai tudo. Se virar problema, melhoramos.
-    const input = '`[[nao-deveria]]` mas [[deveria]].';
-    expect(extractWikilinks(input)).toContain('deveria');
+  it('returns empty array when there are no wikilinks', () => {
+    expect(extractWikilinks('No links here.')).toEqual([]);
   });
 
-  it('retorna lista vazia quando nao ha wikilinks', () => {
-    expect(extractWikilinks('Texto sem links.')).toEqual([]);
-  });
-
-  it('deduplica wikilinks', () => {
-    const input = '[[Java]] e [[Java]] de novo.';
-    expect(extractWikilinks(input)).toEqual(['Java']);
+  it('deduplicates wikilinks', () => {
+    expect(extractWikilinks('[[Java]] and [[Java]] again.'))
+      .toEqual(['Java']);
   });
 });
 
 describe('normalizeWikilink', () => {
-  it('remove [[ ]] e retorna so o target', () => {
+  it('strips [[ ]] and returns the target', () => {
     expect(normalizeWikilink('[[Java Backend]]')).toBe('Java Backend');
     expect(normalizeWikilink('[[Java|alias]]')).toBe('Java');
     expect(normalizeWikilink('[[Java#header]]')).toBe('Java');
   });
 
-  it('retorna entrada como-esta se ja for normalizada', () => {
+  it('returns input as-is when already normalized', () => {
     expect(normalizeWikilink('Java Backend')).toBe('Java Backend');
   });
 });
 ```
 
-- [ ] **Step 6.2: Rodar teste, esperar falha**
+- [ ] **Step 6.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/core test -- parser/wikilinks`
 Expected: FAIL.
 
-- [ ] **Step 6.3: Implementar extrator**
+- [ ] **Step 6.3: Implement extractor**
 
 `packages/core/src/parser/wikilinks.ts`:
 ```ts
 const WIKILINK_REGEX = /\[\[([^\]]+)\]\]/g;
 
-/**
- * Extrai targets de wikilinks no formato [[target]], [[target|alias]] ou [[target#header]].
- * Retorna lista deduplicada, preservando ordem da primeira ocorrencia.
- */
 export function extractWikilinks(content: string): string[] {
   const matches = content.matchAll(WIKILINK_REGEX);
   const seen = new Set<string>();
   const result: string[] = [];
 
   for (const match of matches) {
-    const inner = match[1];
-    const target = inner.split('|')[0].split('#')[0].trim();
+    const target = match[1].split('|')[0].split('#')[0].trim();
     if (target && !seen.has(target)) {
       seen.add(target);
       result.push(target);
@@ -939,17 +820,13 @@ export function extractWikilinks(content: string): string[] {
   return result;
 }
 
-/**
- * Normaliza um wikilink, removendo [[ ]], alias e headers.
- * Aceita "[[X]]", "[[X|alias]]", "[[X#h]]" ou apenas "X".
- */
 export function normalizeWikilink(link: string): string {
   const stripped = link.replace(/^\[\[|\]\]$/g, '');
   return stripped.split('|')[0].split('#')[0].trim();
 }
 ```
 
-- [ ] **Step 6.4: Rodar teste, esperar pass**
+- [ ] **Step 6.4: Run test, expect pass**
 
 Run: `npm run -w @estudeme/core test -- parser/wikilinks`
 Expected: PASS.
@@ -958,18 +835,18 @@ Expected: PASS.
 
 ```bash
 git add packages/core/src/parser/wikilinks.ts packages/core/tests/parser/wikilinks.test.ts
-git commit -m "feat(core): extrator de wikilinks"
+git commit -m "feat(core): wikilink extractor"
 ```
 
 ---
 
-## Tarefa 7: Parser de Documento
+## Task 7: Document Parser
 
 **Files:**
 - Create: `packages/core/src/parser/document.ts`
 - Test: `packages/core/tests/parser/document.test.ts`
 
-- [ ] **Step 7.1: Escrever teste**
+- [ ] **Step 7.1: Write test**
 
 `packages/core/tests/parser/document.test.ts`:
 ```ts
@@ -977,14 +854,14 @@ import { describe, it, expect } from 'vitest';
 import { parseDocument } from '../../src/parser/document.js';
 
 describe('parseDocument', () => {
-  it('combina frontmatter + wikilinks num ParsedDocument', () => {
+  it('combines frontmatter + wikilinks into a ParsedDocument', () => {
     const raw = `---
 type: note
 title: "Spring Boot"
 trail: "[[Java Backend]]"
 ---
 
-Spring Boot facilita [[Dependency Injection]].`;
+Spring Boot makes [[Dependency Injection]] easier.`;
 
     const doc = parseDocument(raw, '/vault/Spring Boot.md', 'Spring Boot.md');
 
@@ -994,52 +871,43 @@ Spring Boot facilita [[Dependency Injection]].`;
     expect(doc.frontmatter.title).toBe('Spring Boot');
     expect(doc.wikilinks).toContain('Java Backend');
     expect(doc.wikilinks).toContain('Dependency Injection');
-    expect(doc.content).toContain('Spring Boot facilita');
   });
 
-  it('extrai wikilinks tambem do frontmatter (campo trail/module/source)', () => {
+  it('also extracts wikilinks from frontmatter fields', () => {
     const raw = `---
 type: card
-title: "DI explicada"
+title: "DI explained"
 trail: "[[Java Backend]]"
 module: "[[Spring Boot]]"
 source: "[[DI Concepts]]"
 ---
 
-Conteudo sem wikilinks.`;
+Body without wikilinks.`;
 
     const doc = parseDocument(raw, '/v/c.md', 'c.md');
     expect(doc.wikilinks).toEqual(
-      expect.arrayContaining(['Java Backend', 'Spring Boot', 'DI Concepts'])
+      expect.arrayContaining(['Java Backend', 'Spring Boot', 'DI Concepts']),
     );
   });
 
-  it('lanca erro se faltar campo type', () => {
-    const raw = `---
-title: "Sem tipo"
----
-
-content`;
+  it('throws when type field is missing', () => {
+    const raw = `---\ntitle: "No type"\n---\n\ncontent`;
     expect(() => parseDocument(raw, '/v/x.md', 'x.md')).toThrow(/type/i);
   });
 
-  it('lanca erro se faltar campo title', () => {
-    const raw = `---
-type: note
----
-
-content`;
+  it('throws when title field is missing', () => {
+    const raw = `---\ntype: note\n---\n\ncontent`;
     expect(() => parseDocument(raw, '/v/y.md', 'y.md')).toThrow(/title/i);
   });
 });
 ```
 
-- [ ] **Step 7.2: Rodar teste, esperar falha**
+- [ ] **Step 7.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/core test -- parser/document`
 Expected: FAIL.
 
-- [ ] **Step 7.3: Implementar parser de documento**
+- [ ] **Step 7.3: Implement document parser**
 
 `packages/core/src/parser/document.ts`:
 ```ts
@@ -1057,23 +925,21 @@ export function parseDocument(
   const { data, content } = parseFrontmatter(raw);
 
   if (!data.type) {
-    throw new Error(`Frontmatter sem campo 'type' em ${relativePath}`);
+    throw new Error(`Frontmatter missing 'type' field in ${relativePath}`);
   }
   if (!data.title) {
-    throw new Error(`Frontmatter sem campo 'title' em ${relativePath}`);
+    throw new Error(`Frontmatter missing 'title' field in ${relativePath}`);
   }
 
   const contentLinks = extractWikilinks(content);
   const fmLinks = extractWikilinksFromFrontmatter(data);
-
-  const allLinks = Array.from(new Set([...fmLinks, ...contentLinks]));
 
   return {
     path: absolutePath,
     relativePath,
     frontmatter: data as unknown as BaseFrontmatter,
     content,
-    wikilinks: allLinks,
+    wikilinks: Array.from(new Set([...fmLinks, ...contentLinks])),
   };
 }
 
@@ -1082,11 +948,8 @@ function extractWikilinksFromFrontmatter(data: Record<string, unknown>): string[
   for (const field of WIKILINK_FRONTMATTER_FIELDS) {
     const value = data[field];
     if (typeof value === 'string') {
-      const normalized = normalizeWikilink(value);
-      if (normalized && normalized !== value.replace(/^\[\[|\]\]$/g, '').split('|')[0]) {
-        // valor jah era simples
-      }
-      if (normalized) links.push(normalized);
+      const n = normalizeWikilink(value);
+      if (n) links.push(n);
     } else if (Array.isArray(value)) {
       for (const v of value) {
         if (typeof v === 'string') {
@@ -1100,7 +963,7 @@ function extractWikilinksFromFrontmatter(data: Record<string, unknown>): string[
 }
 ```
 
-- [ ] **Step 7.4: Rodar teste, esperar pass**
+- [ ] **Step 7.4: Run test, expect pass**
 
 Run: `npm run -w @estudeme/core test -- parser/document`
 Expected: PASS.
@@ -1109,85 +972,85 @@ Expected: PASS.
 
 ```bash
 git add packages/core/src/parser/document.ts packages/core/tests/parser/document.test.ts
-git commit -m "feat(core): parser de documento (frontmatter + wikilinks)"
+git commit -m "feat(core): document parser (frontmatter + wikilinks)"
 ```
 
 ---
 
-## Tarefa 8: Vault Walker e Index
+## Task 8: Vault Walker and Index
 
 **Files:**
 - Create: `packages/core/src/parser/vault.ts`
-- Create: `packages/core/tests/fixtures/sample-vault/` (vault de teste com 5-6 arquivos .md)
+- Create: `packages/core/tests/fixtures/sample-vault/` (test vault)
 - Test: `packages/core/tests/parser/vault.test.ts`
 
-- [ ] **Step 8.1: Criar fixture de vault de teste**
+- [ ] **Step 8.1: Create test vault fixture**
 
-`packages/core/tests/fixtures/sample-vault/Trilha Java.md`:
+`packages/core/tests/fixtures/sample-vault/Java Trail.md`:
 ```markdown
 ---
 type: trail
-title: "Trilha Java"
-description: "Aprender Java do zero"
+title: "Java Trail"
+description: "Learn Java from scratch"
 level: beginner
 status: active
 ---
 
-Trilha de Java.
+Java trail.
 ```
 
-`packages/core/tests/fixtures/sample-vault/Modulo 1.md`:
+`packages/core/tests/fixtures/sample-vault/Module 1.md`:
 ```markdown
 ---
 type: module
-title: "Fundamentos"
-trail: "[[Trilha Java]]"
+title: "Fundamentals"
+trail: "[[Java Trail]]"
 order: 1
 status: in-progress
 ---
 
-Modulo de fundamentos.
+Fundamentals module.
 ```
 
-`packages/core/tests/fixtures/sample-vault/notes/Tipos Primitivos.md`:
+`packages/core/tests/fixtures/sample-vault/notes/Primitive Types.md`:
 ```markdown
 ---
 type: note
-title: "Tipos Primitivos"
-trail: "[[Trilha Java]]"
-module: "[[Modulo 1]]"
+title: "Primitive Types"
+trail: "[[Java Trail]]"
+module: "[[Module 1]]"
 difficulty: 1
 ---
 
-Java tem 8 tipos primitivos.
+Java has 8 primitive types.
 ```
 
 `packages/core/tests/fixtures/sample-vault/cards/card-001.md`:
 ```markdown
 ---
 type: card
-title: "Tipos primitivos"
+title: "Primitive types count"
 card-type: basic
-trail: "[[Trilha Java]]"
-module: "[[Modulo 1]]"
-source: "[[Tipos Primitivos]]"
+trail: "[[Java Trail]]"
+module: "[[Module 1]]"
+source: "[[Primitive Types]]"
 difficulty: 1
 ---
 
-## Frente
-Quantos tipos primitivos Java tem?
+## Front
+How many primitive types does Java have?
 
-## Verso
+## Back
 8.
 ```
 
 `packages/core/tests/fixtures/sample-vault/_invalid/no-type.md`:
 ```markdown
 ---
-title: "Sem type"
+title: "No type"
 ---
 
-Documento invalido.
+Invalid document.
 ```
 
 `packages/core/tests/fixtures/sample-vault/.obsidian/config.json`:
@@ -1195,7 +1058,7 @@ Documento invalido.
 {}
 ```
 
-- [ ] **Step 8.2: Escrever teste**
+- [ ] **Step 8.2: Write test**
 
 `packages/core/tests/parser/vault.test.ts`:
 ```ts
@@ -1208,28 +1071,28 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VAULT = path.resolve(__dirname, '../fixtures/sample-vault');
 
 describe('parseVault', () => {
-  it('encontra todos os .md validos', async () => {
+  it('finds all valid .md files', async () => {
     const result = await parseVault(VAULT);
     const titles = result.documents.map((d) => d.frontmatter.title);
-    expect(titles).toContain('Trilha Java');
-    expect(titles).toContain('Fundamentos');
-    expect(titles).toContain('Tipos Primitivos');
-    expect(titles).toContain('Tipos primitivos'); // o card
+    expect(titles).toContain('Java Trail');
+    expect(titles).toContain('Fundamentals');
+    expect(titles).toContain('Primitive Types');
+    expect(titles).toContain('Primitive types count');
   });
 
-  it('ignora pastas .obsidian e arquivos nao-markdown', async () => {
+  it('ignores .obsidian folder', async () => {
     const result = await parseVault(VAULT);
     const paths = result.documents.map((d) => d.relativePath);
     expect(paths.every((p) => !p.includes('.obsidian'))).toBe(true);
   });
 
-  it('coleta documentos invalidos em result.errors', async () => {
+  it('collects invalid documents into result.errors', async () => {
     const result = await parseVault(VAULT);
     expect(result.errors.length).toBeGreaterThan(0);
     expect(result.errors[0].path).toContain('no-type');
   });
 
-  it('indexa por type', async () => {
+  it('indexes by type', async () => {
     const result = await parseVault(VAULT);
     expect(result.byType.trail.length).toBe(1);
     expect(result.byType.module.length).toBe(1);
@@ -1237,24 +1100,23 @@ describe('parseVault', () => {
     expect(result.byType.card.length).toBe(1);
   });
 
-  it('indexa por title', async () => {
+  it('indexes by title', async () => {
     const result = await parseVault(VAULT);
-    expect(result.byTitle.get('Trilha Java')).toBeDefined();
-    expect(result.byTitle.get('Trilha Java')?.frontmatter.type).toBe('trail');
+    expect(result.byTitle.get('Java Trail')?.frontmatter.type).toBe('trail');
   });
 });
 ```
 
-- [ ] **Step 8.3: Rodar teste, esperar falha**
+- [ ] **Step 8.3: Run test, expect failure**
 
 Run: `npm run -w @estudeme/core test -- parser/vault`
 Expected: FAIL.
 
-- [ ] **Step 8.4: Implementar vault walker**
+- [ ] **Step 8.4: Implement vault walker**
 
 `packages/core/src/parser/vault.ts`:
 ```ts
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseDocument } from './document.js';
 import type { ParsedDocument } from '../types/base.js';
@@ -1272,13 +1134,7 @@ export interface VaultIndex {
   errors: VaultParseError[];
 }
 
-const IGNORED_DIRS = new Set([
-  '.obsidian',
-  '.git',
-  'node_modules',
-  '.trash',
-  '.DS_Store',
-]);
+const IGNORED_DIRS = new Set(['.obsidian', '.git', 'node_modules', '.trash', '.DS_Store']);
 
 export async function parseVault(root: string): Promise<VaultIndex> {
   const documents: ParsedDocument[] = [];
@@ -1289,8 +1145,7 @@ export async function parseVault(root: string): Promise<VaultIndex> {
     const relativePath = path.relative(root, file);
     try {
       const raw = await readFile(file, 'utf-8');
-      const doc = parseDocument(raw, file, relativePath);
-      documents.push(doc);
+      documents.push(parseDocument(raw, file, relativePath));
     } catch (err) {
       errors.push({
         path: relativePath,
@@ -1319,8 +1174,7 @@ async function walkMarkdownFiles(dir: string): Promise<string[]> {
   for (const entry of entries) {
     if (entry.isDirectory()) {
       if (IGNORED_DIRS.has(entry.name)) continue;
-      const sub = await walkMarkdownFiles(path.join(dir, entry.name));
-      result.push(...sub);
+      result.push(...await walkMarkdownFiles(path.join(dir, entry.name)));
     } else if (entry.isFile() && entry.name.endsWith('.md')) {
       result.push(path.join(dir, entry.name));
     }
@@ -1330,12 +1184,12 @@ async function walkMarkdownFiles(dir: string): Promise<string[]> {
 }
 ```
 
-- [ ] **Step 8.5: Rodar teste, esperar pass**
+- [ ] **Step 8.5: Run test, expect pass**
 
 Run: `npm run -w @estudeme/core test -- parser/vault`
-Expected: PASS (5 tests).
+Expected: PASS.
 
-- [ ] **Step 8.6: Atualizar index do parser e do core**
+- [ ] **Step 8.6: Update parser and core index**
 
 `packages/core/src/parser/index.ts`:
 ```ts
@@ -1356,18 +1210,18 @@ export * from './parser/index.js';
 
 ```bash
 git add packages/core/src/parser/ packages/core/src/index.ts packages/core/tests/parser/ packages/core/tests/fixtures/
-git commit -m "feat(core): vault walker e index por type/title"
+git commit -m "feat(core): vault walker and index by type/title"
 ```
 
 ---
 
-## Tarefa 9: Validação
+## Task 9: Validation
 
 **Files:**
-- Create: `packages/core/src/validation/schemas.ts`, `packages/core/src/validation/validate.ts`, `packages/core/src/validation/index.ts`
+- Create: `packages/core/src/validation/schemas.ts`, `validate.ts`, `index.ts`
 - Test: `packages/core/tests/validation/validate.test.ts`
 
-- [ ] **Step 9.1: Escrever teste**
+- [ ] **Step 9.1: Write test**
 
 `packages/core/tests/validation/validate.test.ts`:
 ```ts
@@ -1378,73 +1232,56 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const VAULT = path.resolve(__dirname, '../../tests/fixtures/sample-vault');
+const VAULT = path.resolve(__dirname, '../fixtures/sample-vault');
 
 describe('validateDocument', () => {
-  it('aprova trail valida', () => {
+  it('approves a valid trail', () => {
     const doc = {
-      path: '/v/t.md',
-      relativePath: 't.md',
-      frontmatter: {
-        type: 'trail',
-        title: 'Java',
-        level: 'beginner',
-        status: 'active',
-      },
-      content: '',
-      wikilinks: [],
+      path: '/v/t.md', relativePath: 't.md',
+      frontmatter: { type: 'trail', title: 'Java', level: 'beginner', status: 'active' },
+      content: '', wikilinks: [],
     } as const;
-    const issues = validateDocument(doc);
-    expect(issues).toEqual([]);
+    expect(validateDocument(doc)).toEqual([]);
   });
 
-  it('reporta trail sem level', () => {
+  it('reports trail without level', () => {
     const doc = {
-      path: '/v/t.md',
-      relativePath: 't.md',
+      path: '/v/t.md', relativePath: 't.md',
       frontmatter: { type: 'trail', title: 'Java', status: 'active' },
-      content: '',
-      wikilinks: [],
+      content: '', wikilinks: [],
     } as any;
-    const issues = validateDocument(doc);
-    expect(issues.some((i) => i.field === 'level')).toBe(true);
+    expect(validateDocument(doc).some((i) => i.field === 'level')).toBe(true);
   });
 
-  it('reporta module sem trail', () => {
+  it('reports module without trail', () => {
     const doc = {
-      path: '/v/m.md',
-      relativePath: 'm.md',
+      path: '/v/m.md', relativePath: 'm.md',
       frontmatter: { type: 'module', title: 'X', order: 1, status: 'active' },
-      content: '',
-      wikilinks: [],
+      content: '', wikilinks: [],
     } as any;
-    const issues = validateDocument(doc);
-    expect(issues.some((i) => i.field === 'trail')).toBe(true);
+    expect(validateDocument(doc).some((i) => i.field === 'trail')).toBe(true);
   });
 });
 
 describe('validateVault', () => {
-  it('detecta wikilinks quebrados', async () => {
+  it('detects no broken wikilinks in valid fixture', async () => {
     const idx = await parseVault(VAULT);
-    const result = validateVault(idx);
-    // sample-vault tem links que existem; nao deveria ter broken
-    expect(result.brokenLinks).toEqual([]);
+    expect(validateVault(idx).brokenLinks).toEqual([]);
   });
 
-  it('inclui erros de parse', async () => {
+  it('includes parse errors', async () => {
     const idx = await parseVault(VAULT);
-    const result = validateVault(idx);
-    expect(result.parseErrors.length).toBeGreaterThan(0);
+    expect(validateVault(idx).parseErrors.length).toBeGreaterThan(0);
   });
 });
 ```
 
-- [ ] **Step 9.2: Rodar teste, esperar falha**
+- [ ] **Step 9.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/core test -- validation`
 Expected: FAIL.
 
-- [ ] **Step 9.3: Implementar schemas e validação**
+- [ ] **Step 9.3: Implement schemas and validation**
 
 `packages/core/src/validation/schemas.ts`:
 ```ts
@@ -1566,23 +1403,19 @@ export interface VaultValidationResult {
 export function validateDocument(doc: ParsedDocument): ValidationIssue[] {
   const schema = SCHEMAS[doc.frontmatter.type];
   if (!schema) {
-    // tipo customizado, sem schema — apenas warning
-    return [
-      {
-        path: doc.relativePath,
-        field: 'type',
-        message: `Tipo customizado '${doc.frontmatter.type}' sem schema definido (ok, mas nao validado)`,
-        severity: 'warning',
-      },
-    ];
+    return [{
+      path: doc.relativePath,
+      field: 'type',
+      message: `Custom type '${doc.frontmatter.type}' has no schema (ok, but not validated)`,
+      severity: 'warning',
+    }];
   }
 
   const issues: ValidationIssue[] = [];
   const fm = doc.frontmatter as Record<string, unknown>;
 
   for (const [field, fieldSchema] of Object.entries(schema.fields)) {
-    const value = fm[field];
-    const issue = validateField(doc.relativePath, field, value, fieldSchema);
+    const issue = validateField(doc.relativePath, field, fm[field], fieldSchema);
     if (issue) issues.push(issue);
   }
 
@@ -1597,33 +1430,26 @@ function validateField(
 ): ValidationIssue | null {
   if (value === undefined || value === null) {
     if (schema.required) {
-      return {
-        path,
-        field,
-        message: `Campo obrigatorio '${field}' ausente`,
-        severity: 'error',
-      };
+      return { path, field, message: `Required field '${field}' is missing`, severity: 'error' };
     }
     return null;
   }
-
   if (schema.type === 'string' && typeof value !== 'string') {
-    return { path, field, message: `Campo '${field}' deve ser string`, severity: 'error' };
+    return { path, field, message: `Field '${field}' must be a string`, severity: 'error' };
   }
   if (schema.type === 'number' && typeof value !== 'number') {
-    return { path, field, message: `Campo '${field}' deve ser numero`, severity: 'error' };
+    return { path, field, message: `Field '${field}' must be a number`, severity: 'error' };
   }
   if (schema.type === 'array' && !Array.isArray(value)) {
-    return { path, field, message: `Campo '${field}' deve ser array`, severity: 'error' };
+    return { path, field, message: `Field '${field}' must be an array`, severity: 'error' };
   }
   if (schema.type === 'wikilink' && typeof value !== 'string') {
-    return { path, field, message: `Campo '${field}' deve ser wikilink string`, severity: 'error' };
+    return { path, field, message: `Field '${field}' must be a wikilink string`, severity: 'error' };
   }
   if (schema.enum && typeof value === 'string' && !schema.enum.includes(value)) {
     return {
-      path,
-      field,
-      message: `Campo '${field}' valor '${value}' nao esta em [${schema.enum.join(', ')}]`,
+      path, field,
+      message: `Field '${field}' value '${value}' is not in [${schema.enum.join(', ')}]`,
       severity: 'error',
     };
   }
@@ -1636,7 +1462,6 @@ export function validateVault(index: VaultIndex): VaultValidationResult {
 
   for (const doc of index.documents) {
     documentIssues.push(...validateDocument(doc));
-
     for (const link of doc.wikilinks) {
       const target = normalizeWikilink(link);
       if (!index.byTitle.has(target)) {
@@ -1645,11 +1470,7 @@ export function validateVault(index: VaultIndex): VaultValidationResult {
     }
   }
 
-  return {
-    documentIssues,
-    brokenLinks,
-    parseErrors: index.errors,
-  };
+  return { documentIssues, brokenLinks, parseErrors: index.errors };
 }
 ```
 
@@ -1659,14 +1480,14 @@ export * from './schemas.js';
 export * from './validate.js';
 ```
 
-- [ ] **Step 9.4: Rodar teste, esperar pass**
+- [ ] **Step 9.4: Run test, expect pass**
 
 Run: `npm run -w @estudeme/core test -- validation`
 Expected: PASS.
 
-- [ ] **Step 9.5: Atualizar index do core**
+- [ ] **Step 9.5: Update core index**
 
-Adicionar em `packages/core/src/index.ts`:
+Append to `packages/core/src/index.ts`:
 ```ts
 export * from './validation/index.js';
 ```
@@ -1675,18 +1496,18 @@ export * from './validation/index.js';
 
 ```bash
 git add packages/core/src/validation/ packages/core/src/index.ts packages/core/tests/validation/
-git commit -m "feat(core): validacao de schema e wikilinks quebrados"
+git commit -m "feat(core): schema validation and broken-link detection"
 ```
 
 ---
 
-## Tarefa 10: Métricas — Progresso por Trilha/Módulo
+## Task 10: Progress Metrics
 
 **Files:**
-- Create: `packages/core/src/metrics/progress.ts`, `packages/core/src/metrics/index.ts`
+- Create: `packages/core/src/metrics/progress.ts`, `index.ts`
 - Test: `packages/core/tests/metrics/progress.test.ts`
 
-- [ ] **Step 10.1: Escrever teste**
+- [ ] **Step 10.1: Write test**
 
 `packages/core/tests/metrics/progress.test.ts`:
 ```ts
@@ -1700,12 +1521,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VAULT = path.resolve(__dirname, '../fixtures/sample-vault');
 
 describe('computeTrailProgress', () => {
-  it('calcula progresso de uma trilha (modulos completados / total)', async () => {
+  it('computes trail progress (completed modules / total)', async () => {
     const idx = await parseVault(VAULT);
-    const trail = idx.byTitle.get('Trilha Java')!;
+    const trail = idx.byTitle.get('Java Trail')!;
     const progress = computeTrailProgress(trail, idx);
 
-    expect(progress.title).toBe('Trilha Java');
+    expect(progress.title).toBe('Java Trail');
     expect(progress.totalModules).toBe(1);
     expect(progress.completedModules).toBe(0);
     expect(progress.inProgressModules).toBe(1);
@@ -1714,35 +1535,31 @@ describe('computeTrailProgress', () => {
     expect(progress.cards).toBe(1);
   });
 
-  it('considera modulos com status completed', async () => {
+  it('counts modules with status=completed', async () => {
     const idx = await parseVault(VAULT);
-    // simula modulo completado
-    const trail = idx.byTitle.get('Trilha Java')!;
-    const mod = idx.byTitle.get('Fundamentos')!;
-    (mod.frontmatter as any).status = 'completed';
-
+    const trail = idx.byTitle.get('Java Trail')!;
+    (idx.byTitle.get('Fundamentals')!.frontmatter as any).status = 'completed';
     const progress = computeTrailProgress(trail, idx);
-    expect(progress.completedModules).toBe(1);
     expect(progress.percentComplete).toBe(100);
   });
 });
 
 describe('computeAllTrailsProgress', () => {
-  it('retorna progresso de todas as trilhas', async () => {
+  it('returns progress for all trails', async () => {
     const idx = await parseVault(VAULT);
     const all = computeAllTrailsProgress(idx);
     expect(all.length).toBe(1);
-    expect(all[0].title).toBe('Trilha Java');
+    expect(all[0].title).toBe('Java Trail');
   });
 });
 ```
 
-- [ ] **Step 10.2: Rodar teste, esperar falha**
+- [ ] **Step 10.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/core test -- metrics`
 Expected: FAIL.
 
-- [ ] **Step 10.3: Implementar métricas**
+- [ ] **Step 10.3: Implement metrics**
 
 `packages/core/src/metrics/progress.ts`:
 ```ts
@@ -1780,11 +1597,8 @@ export function computeTrailProgress(trail: ParsedDocument, index: VaultIndex): 
   ).length;
 
   const totalModules = modules.length;
-  const percentComplete = totalModules === 0 ? 0 : Math.round((completedModules / totalModules) * 100);
-
-  const notes = countByTrail(index.byType.note ?? [], trailTitle);
-  const cards = countByTrail(index.byType.card ?? [], trailTitle);
-  const quizzes = countByTrail(index.byType.quiz ?? [], trailTitle);
+  const percentComplete =
+    totalModules === 0 ? 0 : Math.round((completedModules / totalModules) * 100);
 
   return {
     title: trailTitle,
@@ -1793,9 +1607,9 @@ export function computeTrailProgress(trail: ParsedDocument, index: VaultIndex): 
     inProgressModules,
     notStartedModules,
     percentComplete,
-    notes,
-    cards,
-    quizzes,
+    notes: countByTrail(index.byType.note ?? [], trailTitle),
+    cards: countByTrail(index.byType.card ?? [], trailTitle),
+    quizzes: countByTrail(index.byType.quiz ?? [], trailTitle),
   };
 }
 
@@ -1816,14 +1630,14 @@ export function computeAllTrailsProgress(index: VaultIndex): TrailProgress[] {
 export * from './progress.js';
 ```
 
-- [ ] **Step 10.4: Rodar teste, esperar pass**
+- [ ] **Step 10.4: Run test, expect pass**
 
 Run: `npm run -w @estudeme/core test -- metrics`
 Expected: PASS.
 
-- [ ] **Step 10.5: Atualizar index do core**
+- [ ] **Step 10.5: Update core index**
 
-Adicionar em `packages/core/src/index.ts`:
+Append to `packages/core/src/index.ts`:
 ```ts
 export * from './metrics/index.js';
 ```
@@ -1832,20 +1646,20 @@ export * from './metrics/index.js';
 
 ```bash
 git add packages/core/src/metrics/ packages/core/src/index.ts packages/core/tests/metrics/
-git commit -m "feat(core): metricas de progresso por trilha"
+git commit -m "feat(core): trail progress metrics"
 ```
 
 ---
 
-## Tarefa 11: Export Anki — Estratégia Inicial via Subprocess
+## Task 11: Card Export — Neutral JSON
 
-**Decisão:** Para a Fase 0, evitar reimplementar geração de `.apkg` em TypeScript. Em vez disso, o `core` define a interface de export e gera um arquivo intermediário JSON; a CLI delega para o `arcana` Python existente quando disponível, ou apenas exporta JSON/CSV se não.
+**Decision:** For Phase 0, avoid reimplementing `.apkg` generation in TypeScript. `core` emits neutral JSON; users needing `.apkg` pipe it into the Python `arcana`.
 
 **Files:**
-- Create: `packages/core/src/export/anki.ts`, `packages/core/src/export/index.ts`
+- Create: `packages/core/src/export/anki.ts`, `index.ts`
 - Test: `packages/core/tests/export/anki.test.ts`
 
-- [ ] **Step 11.1: Escrever teste**
+- [ ] **Step 11.1: Write test**
 
 `packages/core/tests/export/anki.test.ts`:
 ```ts
@@ -1859,45 +1673,40 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VAULT = path.resolve(__dirname, '../fixtures/sample-vault');
 
 describe('extractCardsForExport', () => {
-  it('extrai cards do vault em formato neutro', async () => {
+  it('extracts cards from the vault', async () => {
     const idx = await parseVault(VAULT);
     const cards = extractCardsForExport(idx);
-
     expect(cards.length).toBe(1);
     expect(cards[0].cardType).toBe('basic');
-    expect(cards[0].front).toContain('Quantos tipos primitivos');
+    expect(cards[0].front).toContain('How many primitive types');
     expect(cards[0].back).toContain('8');
-    expect(cards[0].trail).toBe('Trilha Java');
-    expect(cards[0].module).toBe('Modulo 1');
+    expect(cards[0].trail).toBe('Java Trail');
   });
 
-  it('separa Frente/Verso pelo cabecalho ## Frente / ## Verso', async () => {
+  it('splits Front/Back by ## Front / ## Back headers', async () => {
     const idx = await parseVault(VAULT);
     const cards = extractCardsForExport(idx);
-    expect(cards[0].front.trim()).not.toContain('## Verso');
+    expect(cards[0].front.trim()).not.toContain('## Back');
   });
 });
 
 describe('cardsToJSON', () => {
-  it('serializa cards em JSON estruturado', async () => {
+  it('serializes cards as structured JSON', async () => {
     const idx = await parseVault(VAULT);
-    const cards = extractCardsForExport(idx);
-    const json = cardsToJSON(cards);
+    const json = cardsToJSON(extractCardsForExport(idx));
     const parsed = JSON.parse(json);
-
     expect(parsed.version).toBe(1);
     expect(parsed.cards).toHaveLength(1);
-    expect(parsed.cards[0].front).toContain('Quantos');
   });
 });
 ```
 
-- [ ] **Step 11.2: Rodar teste, esperar falha**
+- [ ] **Step 11.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/core test -- export`
 Expected: FAIL.
 
-- [ ] **Step 11.3: Implementar export**
+- [ ] **Step 11.3: Implement export**
 
 `packages/core/src/export/anki.ts`:
 ```ts
@@ -1917,12 +1726,11 @@ export interface CardForExport {
   difficulty?: number;
 }
 
-const FRONT_HEADER = /^##\s+Frente\s*$/im;
-const BACK_HEADER = /^##\s+Verso\s*$/im;
+const FRONT_HEADER = /^##\s+Front\s*$/im;
+const BACK_HEADER = /^##\s+Back\s*$/im;
 
 export function extractCardsForExport(index: VaultIndex): CardForExport[] {
-  const cards = index.byType.card ?? [];
-  return cards.map((doc) => extractCard(doc));
+  return (index.byType.card ?? []).map((doc) => extractCard(doc));
 }
 
 function extractCard(doc: ParsedDocument): CardForExport {
@@ -1960,11 +1768,7 @@ function splitFrontBack(content: string): { front: string; back: string } {
 
 export function cardsToJSON(cards: CardForExport[]): string {
   return JSON.stringify(
-    {
-      version: 1,
-      generatedAt: new Date().toISOString(),
-      cards,
-    },
+    { version: 1, generatedAt: new Date().toISOString(), cards },
     null,
     2,
   );
@@ -1976,14 +1780,14 @@ export function cardsToJSON(cards: CardForExport[]): string {
 export * from './anki.js';
 ```
 
-- [ ] **Step 11.4: Rodar teste, esperar pass**
+- [ ] **Step 11.4: Run test, expect pass**
 
 Run: `npm run -w @estudeme/core test -- export`
 Expected: PASS.
 
-- [ ] **Step 11.5: Atualizar index do core**
+- [ ] **Step 11.5: Update core index**
 
-Adicionar em `packages/core/src/index.ts`:
+Append to `packages/core/src/index.ts`:
 ```ts
 export * from './export/index.js';
 ```
@@ -1992,28 +1796,26 @@ export * from './export/index.js';
 
 ```bash
 git add packages/core/src/export/ packages/core/src/index.ts packages/core/tests/export/
-git commit -m "feat(core): extracao de cards para export (JSON neutro)"
+git commit -m "feat(core): card extraction for export (neutral JSON)"
 ```
 
 ---
 
-## Tarefa 12: Setup do Package `@estudeme/cli`
+## Task 12: `@estudeme/cli` Package Setup
 
 **Files:**
-- Create: `packages/cli/package.json`, `packages/cli/tsconfig.json`, `packages/cli/tsup.config.ts`, `packages/cli/vitest.config.ts`, `packages/cli/src/index.ts`
+- Create: `packages/cli/package.json`, `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`, `src/index.ts`
 
-- [ ] **Step 12.1: Criar `packages/cli/package.json`**
+- [ ] **Step 12.1: Create `packages/cli/package.json`**
 
 ```json
 {
   "name": "@estudeme/cli",
   "version": "0.0.0",
-  "description": "CLI do EstudeMe",
+  "description": "EstudeMe CLI",
   "type": "module",
   "main": "./dist/index.js",
-  "bin": {
-    "estudeme": "./dist/index.js"
-  },
+  "bin": { "estudeme": "./dist/index.js" },
   "files": ["dist", "templates"],
   "scripts": {
     "build": "tsup",
@@ -2036,22 +1838,19 @@ git commit -m "feat(core): extracao de cards para export (JSON neutro)"
 }
 ```
 
-- [ ] **Step 12.2: Criar `packages/cli/tsconfig.json`**
+- [ ] **Step 12.2: Create `packages/cli/tsconfig.json`**
 
 ```json
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src"
-  },
+  "compilerOptions": { "outDir": "./dist", "rootDir": "./src" },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules", "tests"],
   "references": [{ "path": "../core" }]
 }
 ```
 
-- [ ] **Step 12.3: Criar `packages/cli/tsup.config.ts`**
+- [ ] **Step 12.3: Create `packages/cli/tsup.config.ts`**
 
 ```ts
 import { defineConfig } from 'tsup';
@@ -2067,7 +1866,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 12.4: Criar `packages/cli/vitest.config.ts`**
+- [ ] **Step 12.4: Create `packages/cli/vitest.config.ts`**
 
 ```ts
 import { defineConfig } from 'vitest/config';
@@ -2081,7 +1880,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 12.5: Criar `packages/cli/src/index.ts` placeholder**
+- [ ] **Step 12.5: Create `packages/cli/src/index.ts` placeholder**
 
 ```ts
 import { Command } from 'commander';
@@ -2089,7 +1888,7 @@ import { Command } from 'commander';
 const program = new Command();
 program
   .name('estudeme')
-  .description('Plataforma open-core de estudo autodidata')
+  .description('Open-core self-directed learning platform')
   .version('0.0.0');
 
 program.parseAsync(process.argv).catch((err) => {
@@ -2098,7 +1897,7 @@ program.parseAsync(process.argv).catch((err) => {
 });
 ```
 
-- [ ] **Step 12.6: Instalar deps e validar build**
+- [ ] **Step 12.6: Install deps and validate build**
 
 ```bash
 npm install
@@ -2106,58 +1905,52 @@ npm run -w @estudeme/cli build
 node packages/cli/dist/index.js --help
 ```
 
-Expected: build OK, `--help` mostra usage.
+Expected: build OK, `--help` shows usage.
 
 - [ ] **Step 12.7: Commit**
 
 ```bash
 git add packages/cli/
-git commit -m "chore(cli): setup package @estudeme/cli"
+git commit -m "chore(cli): setup @estudeme/cli package"
 ```
 
 ---
 
-## Tarefa 13: Helper de Carregamento de Vault
+## Task 13: Vault Loader and Format Helpers
 
 **Files:**
-- Create: `packages/cli/src/lib/vault-loader.ts`, `packages/cli/src/lib/format.ts`
+- Create: `packages/cli/src/lib/vault-loader.ts`, `format.ts`
 - Test: `packages/cli/tests/lib/vault-loader.test.ts`
 
-- [ ] **Step 13.1: Escrever teste**
+- [ ] **Step 13.1: Write test**
 
 `packages/cli/tests/lib/vault-loader.test.ts`:
 ```ts
 import { describe, it, expect } from 'vitest';
 import { resolveVaultPath } from '../../src/lib/vault-loader.js';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('resolveVaultPath', () => {
-  it('aceita caminho absoluto', () => {
-    const abs = '/tmp/vault';
-    expect(resolveVaultPath(abs)).toBe(abs);
+  it('accepts an absolute path', () => {
+    expect(resolveVaultPath('/tmp/vault')).toBe('/tmp/vault');
   });
 
-  it('resolve caminho relativo a partir do cwd', () => {
-    const rel = './my-vault';
-    const resolved = resolveVaultPath(rel);
-    expect(path.isAbsolute(resolved)).toBe(true);
+  it('resolves a relative path against cwd', () => {
+    expect(path.isAbsolute(resolveVaultPath('./my-vault'))).toBe(true);
   });
 
-  it('retorna cwd quando vault path nao informado', () => {
+  it('returns cwd when no vault path is given', () => {
     expect(resolveVaultPath()).toBe(process.cwd());
   });
 });
 ```
 
-- [ ] **Step 13.2: Rodar teste, esperar falha**
+- [ ] **Step 13.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/cli test -- vault-loader`
 Expected: FAIL.
 
-- [ ] **Step 13.3: Implementar helpers**
+- [ ] **Step 13.3: Implement helpers**
 
 `packages/cli/src/lib/vault-loader.ts`:
 ```ts
@@ -2172,10 +1965,10 @@ export function resolveVaultPath(input?: string): string {
 
 export function assertVaultExists(vaultPath: string): void {
   if (!existsSync(vaultPath)) {
-    throw new Error(`Vault nao encontrado: ${vaultPath}`);
+    throw new Error(`Vault not found: ${vaultPath}`);
   }
   if (!statSync(vaultPath).isDirectory()) {
-    throw new Error(`Vault path deve ser um diretorio: ${vaultPath}`);
+    throw new Error(`Vault path must be a directory: ${vaultPath}`);
   }
 }
 ```
@@ -2196,8 +1989,7 @@ export const c = {
 
 export function progressBar(percent: number, width = 20): string {
   const filled = Math.round((percent / 100) * width);
-  const empty = width - filled;
-  return '█'.repeat(filled) + '░'.repeat(empty);
+  return '█'.repeat(filled) + '░'.repeat(width - filled);
 }
 
 export function table(head: string[], rows: string[][]): string {
@@ -2210,7 +2002,7 @@ export function table(head: string[], rows: string[][]): string {
 }
 ```
 
-- [ ] **Step 13.4: Rodar teste, esperar pass**
+- [ ] **Step 13.4: Run test, expect pass**
 
 Run: `npm run -w @estudeme/cli test -- vault-loader`
 Expected: PASS.
@@ -2219,19 +2011,19 @@ Expected: PASS.
 
 ```bash
 git add packages/cli/src/lib/ packages/cli/tests/lib/
-git commit -m "feat(cli): helpers de vault-loader e format"
+git commit -m "feat(cli): vault-loader and format helpers"
 ```
 
 ---
 
-## Tarefa 14: Comando `estudeme validate`
+## Task 14: `estudeme validate` Command
 
 **Files:**
 - Create: `packages/cli/src/commands/validate.ts`
 - Modify: `packages/cli/src/index.ts`
 - Test: `packages/cli/tests/commands/validate.test.ts`
 
-- [ ] **Step 14.1: Escrever teste**
+- [ ] **Step 14.1: Write test**
 
 `packages/cli/tests/commands/validate.test.ts`:
 ```ts
@@ -2244,25 +2036,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VAULT = path.resolve(__dirname, '../../../core/tests/fixtures/sample-vault');
 
 describe('estudeme validate', () => {
-  it('retorna exit code 1 quando ha erros', async () => {
+  it('returns exit code 1 when there are errors', async () => {
     const result = await runValidate({ vault: VAULT });
     expect(result.exitCode).toBe(1);
     expect(result.output).toContain('no-type');
   });
 
-  it('lista erros de parse e validacao', async () => {
+  it('lists parse and validation errors', async () => {
     const result = await runValidate({ vault: VAULT });
-    expect(result.output).toMatch(/erro|invalid|sem campo/i);
+    expect(result.output).toMatch(/error|missing|invalid/i);
   });
 });
 ```
 
-- [ ] **Step 14.2: Rodar teste, esperar falha**
+- [ ] **Step 14.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/cli test -- validate`
 Expected: FAIL.
 
-- [ ] **Step 14.3: Implementar comando**
+- [ ] **Step 14.3: Implement command**
 
 `packages/cli/src/commands/validate.ts`:
 ```ts
@@ -2293,7 +2085,7 @@ export async function runValidate(opts: ValidateOptions): Promise<ValidateResult
   let hasError = false;
 
   if (result.parseErrors.length > 0) {
-    lines.push(c.bold('Erros de parse:'));
+    lines.push(c.bold('Parse errors:'));
     for (const e of result.parseErrors) {
       lines.push(`  ${c.err('✗')} ${e.path}: ${e.error}`);
       hasError = true;
@@ -2305,7 +2097,7 @@ export async function runValidate(opts: ValidateOptions): Promise<ValidateResult
   const warnings = result.documentIssues.filter((i) => i.severity === 'warning');
 
   if (errors.length > 0) {
-    lines.push(c.bold(`Erros de validacao (${errors.length}):`));
+    lines.push(c.bold(`Validation errors (${errors.length}):`));
     for (const i of errors) {
       lines.push(`  ${c.err('✗')} ${i.path} [${i.field}]: ${i.message}`);
       hasError = true;
@@ -2314,7 +2106,7 @@ export async function runValidate(opts: ValidateOptions): Promise<ValidateResult
   }
 
   if (warnings.length > 0) {
-    lines.push(c.bold(`Avisos (${warnings.length}):`));
+    lines.push(c.bold(`Warnings (${warnings.length}):`));
     for (const i of warnings) {
       lines.push(`  ${c.warn('⚠')} ${i.path} [${i.field}]: ${i.message}`);
     }
@@ -2322,7 +2114,7 @@ export async function runValidate(opts: ValidateOptions): Promise<ValidateResult
   }
 
   if (result.brokenLinks.length > 0) {
-    lines.push(c.bold(`Wikilinks quebrados (${result.brokenLinks.length}):`));
+    lines.push(c.bold(`Broken wikilinks (${result.brokenLinks.length}):`));
     for (const b of result.brokenLinks) {
       lines.push(`  ${c.err('✗')} ${b.path}: [[${b.link}]]`);
       hasError = true;
@@ -2331,15 +2123,14 @@ export async function runValidate(opts: ValidateOptions): Promise<ValidateResult
   }
 
   lines.push(
-    `${c.dim('Resumo:')} ${idx.documents.length} documentos, ${errors.length} erros, ${warnings.length} avisos, ${result.brokenLinks.length} links quebrados`,
+    `${c.dim('Summary:')} ${idx.documents.length} documents, ${errors.length} errors, ${warnings.length} warnings, ${result.brokenLinks.length} broken links`,
   );
 
-  const output = lines.join('\n');
-  return { exitCode: hasError ? 1 : 0, output };
+  return { exitCode: hasError ? 1 : 0, output: lines.join('\n') };
 }
 ```
 
-- [ ] **Step 14.4: Registrar comando no `index.ts`**
+- [ ] **Step 14.4: Register command in `index.ts`**
 
 `packages/cli/src/index.ts`:
 ```ts
@@ -2349,13 +2140,13 @@ import { runValidate } from './commands/validate.js';
 const program = new Command();
 program
   .name('estudeme')
-  .description('Plataforma open-core de estudo autodidata')
+  .description('Open-core self-directed learning platform')
   .version('0.0.0');
 
 program
   .command('validate')
-  .description('Valida frontmatter, schemas e wikilinks do vault')
-  .option('-v, --vault <path>', 'caminho do vault (default: cwd)')
+  .description('Validate frontmatter, schemas, and wikilinks in the vault')
+  .option('-v, --vault <path>', 'vault path (default: cwd)')
   .action(async (opts) => {
     const { exitCode, output } = await runValidate(opts);
     console.log(output);
@@ -2368,12 +2159,12 @@ program.parseAsync(process.argv).catch((err) => {
 });
 ```
 
-- [ ] **Step 14.5: Rodar teste, esperar pass**
+- [ ] **Step 14.5: Run test, expect pass**
 
 Run: `npm run -w @estudeme/cli test -- validate`
 Expected: PASS.
 
-- [ ] **Step 14.6: Smoke test contra o vault real**
+- [ ] **Step 14.6: Smoke test against the real vault**
 
 ```bash
 npm run -w @estudeme/core build
@@ -2381,25 +2172,23 @@ npm run -w @estudeme/cli build
 node packages/cli/dist/index.js validate --vault /home/josenaldo/repos/personal/codex-technomanticus
 ```
 
-Expected: lista erros/avisos do vault real (esperado ter alguns).
-
 - [ ] **Step 14.7: Commit**
 
 ```bash
 git add packages/cli/src/commands/validate.ts packages/cli/src/index.ts packages/cli/tests/commands/validate.test.ts
-git commit -m "feat(cli): comando 'validate'"
+git commit -m "feat(cli): 'validate' command"
 ```
 
 ---
 
-## Tarefa 15: Comando `estudeme trail list/status`
+## Task 15: `estudeme trail list/status`
 
 **Files:**
 - Create: `packages/cli/src/commands/trail.ts`
 - Modify: `packages/cli/src/index.ts`
 - Test: `packages/cli/tests/commands/trail.test.ts`
 
-- [ ] **Step 15.1: Escrever teste**
+- [ ] **Step 15.1: Write test**
 
 `packages/cli/tests/commands/trail.test.ts`:
 ```ts
@@ -2412,36 +2201,36 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VAULT = path.resolve(__dirname, '../../../core/tests/fixtures/sample-vault');
 
 describe('estudeme trail list', () => {
-  it('lista todas as trilhas com progresso', async () => {
+  it('lists all trails with progress', async () => {
     const r = await runTrailList({ vault: VAULT });
-    expect(r.output).toContain('Trilha Java');
+    expect(r.output).toContain('Java Trail');
     expect(r.output).toMatch(/0%/);
   });
 });
 
 describe('estudeme trail status', () => {
-  it('mostra status detalhado de uma trilha', async () => {
-    const r = await runTrailStatus({ vault: VAULT, trail: 'Trilha Java' });
-    expect(r.output).toContain('Trilha Java');
-    expect(r.output).toContain('Modulos');
-    expect(r.output).toContain('Notas');
+  it('shows detailed status for a trail', async () => {
+    const r = await runTrailStatus({ vault: VAULT, trail: 'Java Trail' });
+    expect(r.output).toContain('Java Trail');
+    expect(r.output).toContain('Modules');
+    expect(r.output).toContain('Notes');
     expect(r.output).toContain('Cards');
   });
 
-  it('retorna erro quando trilha nao existe', async () => {
-    const r = await runTrailStatus({ vault: VAULT, trail: 'Inexistente' });
+  it('returns error when trail does not exist', async () => {
+    const r = await runTrailStatus({ vault: VAULT, trail: 'Nonexistent' });
     expect(r.exitCode).toBe(1);
-    expect(r.output).toMatch(/nao encontrada/i);
+    expect(r.output).toMatch(/not found/i);
   });
 });
 ```
 
-- [ ] **Step 15.2: Rodar teste, esperar falha**
+- [ ] **Step 15.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/cli test -- trail`
 Expected: FAIL.
 
-- [ ] **Step 15.3: Implementar comando**
+- [ ] **Step 15.3: Implement command**
 
 `packages/cli/src/commands/trail.ts`:
 ```ts
@@ -2449,19 +2238,9 @@ import { parseVault, computeAllTrailsProgress, computeTrailProgress } from '@est
 import { resolveVaultPath, assertVaultExists } from '../lib/vault-loader.js';
 import { c, table, progressBar } from '../lib/format.js';
 
-export interface TrailListOptions {
-  vault?: string;
-}
-
-export interface TrailStatusOptions {
-  vault?: string;
-  trail: string;
-}
-
-export interface CommandResult {
-  exitCode: number;
-  output: string;
-}
+export interface TrailListOptions { vault?: string }
+export interface TrailStatusOptions { vault?: string; trail: string }
+export interface CommandResult { exitCode: number; output: string }
 
 export async function runTrailList(opts: TrailListOptions): Promise<CommandResult> {
   const vaultPath = resolveVaultPath(opts.vault);
@@ -2471,7 +2250,7 @@ export async function runTrailList(opts: TrailListOptions): Promise<CommandResul
   const all = computeAllTrailsProgress(idx);
 
   if (all.length === 0) {
-    return { exitCode: 0, output: c.dim('Nenhuma trilha encontrada.') };
+    return { exitCode: 0, output: c.dim('No trails found.') };
   }
 
   const rows = all.map((p) => [
@@ -2482,8 +2261,7 @@ export async function runTrailList(opts: TrailListOptions): Promise<CommandResul
     String(p.cards),
   ]);
 
-  const out = table(['Trilha', 'Progresso', 'Modulos', 'Notas', 'Cards'], rows);
-  return { exitCode: 0, output: out };
+  return { exitCode: 0, output: table(['Trail', 'Progress', 'Modules', 'Notes', 'Cards'], rows) };
 }
 
 export async function runTrailStatus(opts: TrailStatusOptions): Promise<CommandResult> {
@@ -2494,18 +2272,17 @@ export async function runTrailStatus(opts: TrailStatusOptions): Promise<CommandR
   const trail = idx.byTitle.get(opts.trail);
 
   if (!trail || trail.frontmatter.type !== 'trail') {
-    return { exitCode: 1, output: c.err(`Trilha nao encontrada: ${opts.trail}`) };
+    return { exitCode: 1, output: c.err(`Trail not found: ${opts.trail}`) };
   }
 
   const p = computeTrailProgress(trail, idx);
-
   const lines = [
     c.bold(`📋 ${p.title}`),
     '',
-    `Progresso: ${progressBar(p.percentComplete, 30)} ${p.percentComplete}%`,
+    `Progress: ${progressBar(p.percentComplete, 30)} ${p.percentComplete}%`,
     '',
-    `${c.dim('Modulos:')}     ${p.completedModules} completos | ${p.inProgressModules} em progresso | ${p.notStartedModules} nao iniciados`,
-    `${c.dim('Notas:')}       ${p.notes}`,
+    `${c.dim('Modules:')}     ${p.completedModules} completed | ${p.inProgressModules} in progress | ${p.notStartedModules} not started`,
+    `${c.dim('Notes:')}       ${p.notes}`,
     `${c.dim('Cards:')}       ${p.cards}`,
     `${c.dim('Quizzes:')}     ${p.quizzes}`,
   ];
@@ -2514,18 +2291,18 @@ export async function runTrailStatus(opts: TrailStatusOptions): Promise<CommandR
 }
 ```
 
-- [ ] **Step 15.4: Registrar comando no `index.ts`**
+- [ ] **Step 15.4: Register command**
 
-Adicionar em `packages/cli/src/index.ts` antes do `program.parseAsync`:
+Append to `packages/cli/src/index.ts` before `program.parseAsync`:
 ```ts
 import { runTrailList, runTrailStatus } from './commands/trail.js';
 
-const trail = program.command('trail').description('Gerencia trilhas de estudo');
+const trail = program.command('trail').description('Manage study trails');
 
 trail
   .command('list')
-  .description('Lista todas as trilhas com progresso')
-  .option('-v, --vault <path>', 'caminho do vault')
+  .description('List all trails with progress')
+  .option('-v, --vault <path>', 'vault path')
   .action(async (opts) => {
     const r = await runTrailList(opts);
     console.log(r.output);
@@ -2534,8 +2311,8 @@ trail
 
 trail
   .command('status <trail>')
-  .description('Mostra status detalhado de uma trilha')
-  .option('-v, --vault <path>', 'caminho do vault')
+  .description('Show detailed status for a trail')
+  .option('-v, --vault <path>', 'vault path')
   .action(async (trailName, opts) => {
     const r = await runTrailStatus({ ...opts, trail: trailName });
     console.log(r.output);
@@ -2543,7 +2320,7 @@ trail
   });
 ```
 
-- [ ] **Step 15.5: Rodar teste, esperar pass**
+- [ ] **Step 15.5: Run test, expect pass**
 
 Run: `npm run -w @estudeme/cli test -- trail`
 Expected: PASS.
@@ -2552,19 +2329,19 @@ Expected: PASS.
 
 ```bash
 git add packages/cli/src/commands/trail.ts packages/cli/src/index.ts packages/cli/tests/commands/trail.test.ts
-git commit -m "feat(cli): comandos 'trail list' e 'trail status'"
+git commit -m "feat(cli): 'trail list' and 'trail status' commands"
 ```
 
 ---
 
-## Tarefa 16: Comando `estudeme cards list/export`
+## Task 16: `estudeme cards list/export`
 
 **Files:**
 - Create: `packages/cli/src/commands/cards.ts`
 - Modify: `packages/cli/src/index.ts`
 - Test: `packages/cli/tests/commands/cards.test.ts`
 
-- [ ] **Step 16.1: Escrever teste**
+- [ ] **Step 16.1: Write test**
 
 `packages/cli/tests/commands/cards.test.ts`:
 ```ts
@@ -2579,19 +2356,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VAULT = path.resolve(__dirname, '../../../core/tests/fixtures/sample-vault');
 
 describe('estudeme cards list', () => {
-  it('lista cards com filtros opcionais', async () => {
+  it('lists cards with optional filters', async () => {
     const r = await runCardsList({ vault: VAULT });
     expect(r.output).toContain('1 card');
   });
 
-  it('filtra por trilha', async () => {
-    const r = await runCardsList({ vault: VAULT, trail: 'Trilha Java' });
+  it('filters by trail', async () => {
+    const r = await runCardsList({ vault: VAULT, trail: 'Java Trail' });
     expect(r.output).toContain('1 card');
   });
 });
 
 describe('estudeme cards export', () => {
-  it('exporta cards para JSON', async () => {
+  it('exports cards to JSON', async () => {
     const tmp = mkdtempSync(path.join(tmpdir(), 'estudeme-test-'));
     const out = path.join(tmp, 'cards.json');
     try {
@@ -2606,12 +2383,12 @@ describe('estudeme cards export', () => {
 });
 ```
 
-- [ ] **Step 16.2: Rodar teste, esperar falha**
+- [ ] **Step 16.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/cli test -- cards`
 Expected: FAIL.
 
-- [ ] **Step 16.3: Implementar comando**
+- [ ] **Step 16.3: Implement command**
 
 `packages/cli/src/commands/cards.ts`:
 ```ts
@@ -2620,23 +2397,9 @@ import { resolveVaultPath, assertVaultExists } from '../lib/vault-loader.js';
 import { c, table } from '../lib/format.js';
 import { writeFile } from 'node:fs/promises';
 
-export interface CardsListOptions {
-  vault?: string;
-  trail?: string;
-  module?: string;
-}
-
-export interface CardsExportOptions {
-  vault?: string;
-  output: string;
-  format: 'json' | 'apkg';
-  trail?: string;
-}
-
-export interface CommandResult {
-  exitCode: number;
-  output: string;
-}
+export interface CardsListOptions { vault?: string; trail?: string; module?: string }
+export interface CardsExportOptions { vault?: string; output: string; format: 'json' | 'apkg'; trail?: string }
+export interface CommandResult { exitCode: number; output: string }
 
 export async function runCardsList(opts: CardsListOptions): Promise<CommandResult> {
   const vaultPath = resolveVaultPath(opts.vault);
@@ -2644,12 +2407,11 @@ export async function runCardsList(opts: CardsListOptions): Promise<CommandResul
 
   const idx = await parseVault(vaultPath);
   let cards = extractCardsForExport(idx);
-
   if (opts.trail) cards = cards.filter((c) => c.trail === opts.trail);
   if (opts.module) cards = cards.filter((c) => c.module === opts.module);
 
   if (cards.length === 0) {
-    return { exitCode: 0, output: c.dim('Nenhum card encontrado.') };
+    return { exitCode: 0, output: c.dim('No cards found.') };
   }
 
   const rows = cards.map((card) => [
@@ -2660,11 +2422,8 @@ export async function runCardsList(opts: CardsListOptions): Promise<CommandResul
     card.front.slice(0, 50) + (card.front.length > 50 ? '...' : ''),
   ]);
 
-  const t = table(['ID', 'Tipo', 'Trilha', 'Modulo', 'Frente'], rows);
-  return {
-    exitCode: 0,
-    output: `${t}\n${c.dim(`${cards.length} card(s)`)}`,
-  };
+  const t = table(['ID', 'Type', 'Trail', 'Module', 'Front'], rows);
+  return { exitCode: 0, output: `${t}\n${c.dim(`${cards.length} card(s)`)}` };
 }
 
 export async function runCardsExport(opts: CardsExportOptions): Promise<CommandResult> {
@@ -2677,39 +2436,34 @@ export async function runCardsExport(opts: CardsExportOptions): Promise<CommandR
 
   if (opts.format === 'json') {
     await writeFile(opts.output, cardsToJSON(cards), 'utf-8');
-    return {
-      exitCode: 0,
-      output: c.ok(`✓ ${cards.length} cards exportados para ${opts.output}`),
-    };
+    return { exitCode: 0, output: c.ok(`✓ ${cards.length} cards exported to ${opts.output}`) };
   }
 
   if (opts.format === 'apkg') {
     return {
       exitCode: 1,
-      output: c.warn(
-        'Export .apkg em Fase 0: use `arcana` (Python) com o JSON gerado por --format json. Suporte nativo virara em fase posterior.',
-      ),
+      output: c.warn('Phase 0 .apkg export: use `arcana` (Python) with the JSON produced by --format json. Native support arrives later.'),
     };
   }
 
-  return { exitCode: 1, output: c.err(`Formato desconhecido: ${opts.format}`) };
+  return { exitCode: 1, output: c.err(`Unknown format: ${opts.format}`) };
 }
 ```
 
-- [ ] **Step 16.4: Registrar comando**
+- [ ] **Step 16.4: Register command**
 
-Adicionar em `packages/cli/src/index.ts`:
+Append to `packages/cli/src/index.ts`:
 ```ts
 import { runCardsList, runCardsExport } from './commands/cards.js';
 
-const cards = program.command('cards').description('Gerencia flashcards');
+const cards = program.command('cards').description('Manage flashcards');
 
 cards
   .command('list')
-  .description('Lista cards do vault com filtros opcionais')
-  .option('-v, --vault <path>', 'caminho do vault')
-  .option('-t, --trail <name>', 'filtra por trilha')
-  .option('-m, --module <name>', 'filtra por modulo')
+  .description('List cards in the vault with optional filters')
+  .option('-v, --vault <path>', 'vault path')
+  .option('-t, --trail <name>', 'filter by trail')
+  .option('-m, --module <name>', 'filter by module')
   .action(async (opts) => {
     const r = await runCardsList(opts);
     console.log(r.output);
@@ -2718,11 +2472,11 @@ cards
 
 cards
   .command('export')
-  .description('Exporta cards (json ou apkg)')
-  .requiredOption('-o, --output <path>', 'arquivo de saida')
+  .description('Export cards (json or apkg)')
+  .requiredOption('-o, --output <path>', 'output file')
   .option('-f, --format <format>', 'json | apkg', 'json')
-  .option('-v, --vault <path>', 'caminho do vault')
-  .option('-t, --trail <name>', 'filtra por trilha')
+  .option('-v, --vault <path>', 'vault path')
+  .option('-t, --trail <name>', 'filter by trail')
   .action(async (opts) => {
     const r = await runCardsExport(opts);
     console.log(r.output);
@@ -2730,7 +2484,7 @@ cards
   });
 ```
 
-- [ ] **Step 16.5: Rodar teste, esperar pass**
+- [ ] **Step 16.5: Run test, expect pass**
 
 Run: `npm run -w @estudeme/cli test -- cards`
 Expected: PASS.
@@ -2739,19 +2493,19 @@ Expected: PASS.
 
 ```bash
 git add packages/cli/src/commands/cards.ts packages/cli/src/index.ts packages/cli/tests/commands/cards.test.ts
-git commit -m "feat(cli): comandos 'cards list' e 'cards export'"
+git commit -m "feat(cli): 'cards list' and 'cards export' commands"
 ```
 
 ---
 
-## Tarefa 17: Comando `estudeme metrics show`
+## Task 17: `estudeme metrics show`
 
 **Files:**
 - Create: `packages/cli/src/commands/metrics.ts`
 - Modify: `packages/cli/src/index.ts`
 - Test: `packages/cli/tests/commands/metrics.test.ts`
 
-- [ ] **Step 17.1: Escrever teste**
+- [ ] **Step 17.1: Write test**
 
 `packages/cli/tests/commands/metrics.test.ts`:
 ```ts
@@ -2764,27 +2518,27 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VAULT = path.resolve(__dirname, '../../../core/tests/fixtures/sample-vault');
 
 describe('estudeme metrics show', () => {
-  it('mostra dashboard com totais por tipo', async () => {
+  it('shows dashboard with totals by type', async () => {
     const r = await runMetricsShow({ vault: VAULT });
-    expect(r.output).toContain('Trilhas');
-    expect(r.output).toContain('Modulos');
-    expect(r.output).toContain('Notas');
+    expect(r.output).toContain('Trails');
+    expect(r.output).toContain('Modules');
+    expect(r.output).toContain('Notes');
     expect(r.output).toContain('Cards');
   });
 
-  it('inclui progresso de cada trilha', async () => {
+  it('includes progress for each trail', async () => {
     const r = await runMetricsShow({ vault: VAULT });
-    expect(r.output).toContain('Trilha Java');
+    expect(r.output).toContain('Java Trail');
   });
 });
 ```
 
-- [ ] **Step 17.2: Rodar teste, esperar falha**
+- [ ] **Step 17.2: Run test, expect failure**
 
 Run: `npm run -w @estudeme/cli test -- metrics`
 Expected: FAIL.
 
-- [ ] **Step 17.3: Implementar comando**
+- [ ] **Step 17.3: Implement command**
 
 `packages/cli/src/commands/metrics.ts`:
 ```ts
@@ -2792,14 +2546,8 @@ import { parseVault, computeAllTrailsProgress } from '@estudeme/core';
 import { resolveVaultPath, assertVaultExists } from '../lib/vault-loader.js';
 import { c, progressBar } from '../lib/format.js';
 
-export interface MetricsShowOptions {
-  vault?: string;
-}
-
-export interface CommandResult {
-  exitCode: number;
-  output: string;
-}
+export interface MetricsShowOptions { vault?: string }
+export interface CommandResult { exitCode: number; output: string }
 
 export async function runMetricsShow(opts: MetricsShowOptions): Promise<CommandResult> {
   const vaultPath = resolveVaultPath(opts.vault);
@@ -2819,21 +2567,21 @@ export async function runMetricsShow(opts: MetricsShowOptions): Promise<CommandR
   };
 
   const lines: string[] = [];
-  lines.push(c.bold('📊 Dashboard EstudeMe'));
+  lines.push(c.bold('📊 EstudeMe Dashboard'));
   lines.push(c.dim(`Vault: ${vaultPath}`));
   lines.push('');
-  lines.push(c.bold('Totais'));
-  lines.push(`  ${c.dim('Trilhas:')}   ${totals.trails}`);
-  lines.push(`  ${c.dim('Modulos:')}   ${totals.modules}`);
-  lines.push(`  ${c.dim('Notas:')}     ${totals.notes}`);
+  lines.push(c.bold('Totals'));
+  lines.push(`  ${c.dim('Trails:')}    ${totals.trails}`);
+  lines.push(`  ${c.dim('Modules:')}   ${totals.modules}`);
+  lines.push(`  ${c.dim('Notes:')}     ${totals.notes}`);
   lines.push(`  ${c.dim('Cards:')}     ${totals.cards}`);
   lines.push(`  ${c.dim('Quizzes:')}   ${totals.quizzes}`);
-  lines.push(`  ${c.dim('Exames:')}    ${totals.exams}`);
-  lines.push(`  ${c.dim('Recursos:')}  ${totals.resources}`);
+  lines.push(`  ${c.dim('Exams:')}     ${totals.exams}`);
+  lines.push(`  ${c.dim('Resources:')} ${totals.resources}`);
   lines.push('');
 
   if (all.length > 0) {
-    lines.push(c.bold('Trilhas'));
+    lines.push(c.bold('Trails'));
     for (const p of all) {
       lines.push(
         `  ${p.title.padEnd(30)} ${progressBar(p.percentComplete, 20)} ${String(p.percentComplete).padStart(3)}%`,
@@ -2845,18 +2593,18 @@ export async function runMetricsShow(opts: MetricsShowOptions): Promise<CommandR
 }
 ```
 
-- [ ] **Step 17.4: Registrar comando**
+- [ ] **Step 17.4: Register command**
 
-Adicionar em `packages/cli/src/index.ts`:
+Append to `packages/cli/src/index.ts`:
 ```ts
 import { runMetricsShow } from './commands/metrics.js';
 
-const metrics = program.command('metrics').description('Mostra metricas de estudo');
+const metrics = program.command('metrics').description('Show study metrics');
 
 metrics
   .command('show')
-  .description('Dashboard com totais e progresso por trilha')
-  .option('-v, --vault <path>', 'caminho do vault')
+  .description('Dashboard with totals and per-trail progress')
+  .option('-v, --vault <path>', 'vault path')
   .action(async (opts) => {
     const r = await runMetricsShow(opts);
     console.log(r.output);
@@ -2864,7 +2612,7 @@ metrics
   });
 ```
 
-- [ ] **Step 17.5: Rodar teste, esperar pass**
+- [ ] **Step 17.5: Run test, expect pass**
 
 Run: `npm run -w @estudeme/cli test -- metrics`
 Expected: PASS.
@@ -2873,26 +2621,26 @@ Expected: PASS.
 
 ```bash
 git add packages/cli/src/commands/metrics.ts packages/cli/src/index.ts packages/cli/tests/commands/metrics.test.ts
-git commit -m "feat(cli): comando 'metrics show'"
+git commit -m "feat(cli): 'metrics show' command"
 ```
 
 ---
 
-## Tarefa 18: Templates e Comando `estudeme init`
+## Task 18: Templates and `estudeme init`
 
 **Files:**
 - Create: `packages/cli/templates/{trail,module,note,card,quiz}.md`
 - Create: `packages/cli/src/commands/init.ts`
-- Modify: `packages/cli/src/index.ts`, `packages/cli/tsup.config.ts` (copy templates)
+- Modify: `packages/cli/src/index.ts`, `packages/cli/tsup.config.ts`
 - Test: `packages/cli/tests/commands/init.test.ts`
 
-- [ ] **Step 18.1: Criar templates**
+- [ ] **Step 18.1: Create templates**
 
 `packages/cli/templates/trail.md`:
 ```markdown
 ---
 type: trail
-title: "<%* tR += await tp.system.prompt('Titulo da trilha') %>"
+title: "<%* tR += await tp.system.prompt('Trail title') %>"
 description: ""
 level: beginner
 prerequisites: []
@@ -2901,11 +2649,11 @@ status: active
 created: <% tp.date.now('YYYY-MM-DD') %>
 ---
 
-## Objetivo
+## Goal
 
-<descricao da trilha>
+<trail description>
 
-## Modulos
+## Modules
 
 - 
 ```
@@ -2914,13 +2662,13 @@ created: <% tp.date.now('YYYY-MM-DD') %>
 ```markdown
 ---
 type: module
-title: "<%* tR += await tp.system.prompt('Titulo do modulo') %>"
-trail: "[[<%* tR += await tp.system.prompt('Trilha') %>]]"
+title: "<%* tR += await tp.system.prompt('Module title') %>"
+trail: "[[<%* tR += await tp.system.prompt('Trail') %>]]"
 order: 1
 status: not-started
 ---
 
-## Conteudo
+## Content
 
 - 
 ```
@@ -2937,14 +2685,13 @@ tags: []
 ---
 
 
-
 ```
 
 `packages/cli/templates/card.md`:
 ```markdown
 ---
 type: card
-title: "<%* tR += await tp.system.prompt('Titulo do card') %>"
+title: "<%* tR += await tp.system.prompt('Card title') %>"
 card-type: basic
 trail: ""
 module: ""
@@ -2952,20 +2699,20 @@ source: ""
 difficulty: 2
 ---
 
-## Frente
+## Front
 
-<pergunta>
+<question>
 
-## Verso
+## Back
 
-<resposta>
+<answer>
 ```
 
 `packages/cli/templates/quiz.md`:
 ```markdown
 ---
 type: quiz
-title: "<%* tR += await tp.system.prompt('Titulo do quiz') %>"
+title: "<%* tR += await tp.system.prompt('Quiz title') %>"
 trail: ""
 module: ""
 questions: 5
@@ -2974,15 +2721,15 @@ passing-score: 70
 
 ## Q1
 
-<pergunta>
+<question>
 
-- [ ] opcao A
-- [ ] opcao B
-- [x] opcao C (correta)
-- [ ] opcao D
+- [ ] option A
+- [ ] option B
+- [x] option C (correct)
+- [ ] option D
 ```
 
-- [ ] **Step 18.2: Atualizar `tsup.config.ts` para copiar templates no build**
+- [ ] **Step 18.2: Update `tsup.config.ts` to copy templates on build**
 
 `packages/cli/tsup.config.ts`:
 ```ts
@@ -3003,7 +2750,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 18.3: Escrever teste**
+- [ ] **Step 18.3: Write test**
 
 `packages/cli/tests/commands/init.test.ts`:
 ```ts
@@ -3014,14 +2761,12 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 describe('estudeme init', () => {
-  it('cria pasta _templates com 5 templates', async () => {
+  it('creates _templates folder with 5 templates', async () => {
     const tmp = mkdtempSync(path.join(tmpdir(), 'estudeme-init-'));
     try {
       const r = await runInit({ vault: tmp });
       expect(r.exitCode).toBe(0);
-
-      const tpls = ['trail', 'module', 'note', 'card', 'quiz'];
-      for (const t of tpls) {
+      for (const t of ['trail', 'module', 'note', 'card', 'quiz']) {
         const p = path.join(tmp, '_templates', `${t}.md`);
         expect(existsSync(p)).toBe(true);
         expect(readFileSync(p, 'utf-8')).toContain(`type: ${t}`);
@@ -3031,24 +2776,22 @@ describe('estudeme init', () => {
     }
   });
 
-  it('cria README explicando estrutura', async () => {
+  it('creates a README explaining the structure', async () => {
     const tmp = mkdtempSync(path.join(tmpdir(), 'estudeme-init-'));
     try {
       await runInit({ vault: tmp });
-      const readme = path.join(tmp, 'README.md');
-      expect(existsSync(readme)).toBe(true);
-      expect(readFileSync(readme, 'utf-8')).toContain('EstudeMe');
+      expect(readFileSync(path.join(tmp, 'README.md'), 'utf-8')).toContain('EstudeMe');
     } finally {
       rmSync(tmp, { recursive: true });
     }
   });
 
-  it('nao sobrescreve arquivos existentes sem --force', async () => {
+  it('does not overwrite existing files without --force', async () => {
     const tmp = mkdtempSync(path.join(tmpdir(), 'estudeme-init-'));
     try {
       await runInit({ vault: tmp });
       const r2 = await runInit({ vault: tmp });
-      expect(r2.output).toMatch(/ja existe|skip/i);
+      expect(r2.output).toMatch(/already exists|skip/i);
     } finally {
       rmSync(tmp, { recursive: true });
     }
@@ -3056,12 +2799,12 @@ describe('estudeme init', () => {
 });
 ```
 
-- [ ] **Step 18.4: Rodar teste, esperar falha**
+- [ ] **Step 18.4: Run test, expect failure**
 
 Run: `npm run -w @estudeme/cli test -- init`
 Expected: FAIL.
 
-- [ ] **Step 18.5: Implementar comando**
+- [ ] **Step 18.5: Implement command**
 
 `packages/cli/src/commands/init.ts`:
 ```ts
@@ -3072,47 +2815,39 @@ import { resolveVaultPath } from '../lib/vault-loader.js';
 import { c } from '../lib/format.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// templates copiados para dist/templates pelo tsup
 const TEMPLATES_DIR = path.resolve(__dirname, '../templates');
 const TEMPLATE_NAMES = ['trail', 'module', 'note', 'card', 'quiz'];
 
-export interface InitOptions {
-  vault?: string;
-  force?: boolean;
-}
+export interface InitOptions { vault?: string; force?: boolean }
+export interface CommandResult { exitCode: number; output: string }
 
-export interface CommandResult {
-  exitCode: number;
-  output: string;
-}
+const README = `# EstudeMe Vault
 
-const README = `# Vault EstudeMe
+This vault was initialized by \`estudeme init\`.
 
-Este vault foi inicializado pelo \`estudeme init\`.
+## Structure
 
-## Estrutura
-
-- \`_templates/\` — templates Templater para criar trail, module, note, card, quiz
-- demais arquivos sao livres — o EstudeMe encontra conteudo por frontmatter, nao por pasta
+- \`_templates/\` — Templater templates for trail, module, note, card, quiz
+- Other files are free — EstudeMe finds content by frontmatter, not folder
 
 ## Frontmatter
 
-Todo arquivo .md de conteudo precisa de:
+Every content \`.md\` file needs:
 
 \`\`\`yaml
 ---
 type: trail | module | note | card | quiz | exam | resource
-title: "Titulo"
+title: "Title"
 ---
 \`\`\`
 
-Veja \`_templates/\` para exemplos de cada tipo.
+See \`_templates/\` for examples of each type.
 
-## Comandos uteis
+## Useful commands
 
-- \`estudeme validate\` — valida frontmatter e wikilinks
-- \`estudeme trail list\` — lista trilhas com progresso
-- \`estudeme metrics show\` — dashboard de estudo
+- \`estudeme validate\` — validate frontmatter and wikilinks
+- \`estudeme trail list\` — list trails with progress
+- \`estudeme metrics show\` — study dashboard
 `;
 
 export async function runInit(opts: InitOptions): Promise<CommandResult> {
@@ -3120,15 +2855,15 @@ export async function runInit(opts: InitOptions): Promise<CommandResult> {
   await mkdir(vaultPath, { recursive: true });
 
   const lines: string[] = [];
-  lines.push(c.dim(`Inicializando vault em: ${vaultPath}`));
+  lines.push(c.dim(`Initializing vault at: ${vaultPath}`));
 
   const templatesDir = path.join(vaultPath, '_templates');
   await mkdir(templatesDir, { recursive: true });
 
   for (const name of TEMPLATE_NAMES) {
     const target = path.join(templatesDir, `${name}.md`);
-    if (await exists(target) && !opts.force) {
-      lines.push(c.dim(`  - _templates/${name}.md (ja existe, skip)`));
+    if ((await exists(target)) && !opts.force) {
+      lines.push(c.dim(`  - _templates/${name}.md (already exists, skipped)`));
       continue;
     }
     const src = path.join(TEMPLATES_DIR, `${name}.md`);
@@ -3138,15 +2873,15 @@ export async function runInit(opts: InitOptions): Promise<CommandResult> {
   }
 
   const readmePath = path.join(vaultPath, 'README.md');
-  if (await exists(readmePath) && !opts.force) {
-    lines.push(c.dim(`  - README.md (ja existe, skip)`));
+  if ((await exists(readmePath)) && !opts.force) {
+    lines.push(c.dim(`  - README.md (already exists, skipped)`));
   } else {
     await writeFile(readmePath, README, 'utf-8');
     lines.push(c.ok(`  ✓ README.md`));
   }
 
   lines.push('');
-  lines.push(c.ok('Vault inicializado.'));
+  lines.push(c.ok('Vault initialized.'));
   return { exitCode: 0, output: lines.join('\n') };
 }
 
@@ -3160,17 +2895,17 @@ async function exists(p: string): Promise<boolean> {
 }
 ```
 
-- [ ] **Step 18.6: Registrar comando**
+- [ ] **Step 18.6: Register command**
 
-Adicionar em `packages/cli/src/index.ts`:
+Append to `packages/cli/src/index.ts`:
 ```ts
 import { runInit } from './commands/init.js';
 
 program
   .command('init')
-  .description('Inicializa um vault EstudeMe (cria _templates/ e README.md)')
-  .option('-v, --vault <path>', 'caminho do vault (default: cwd)')
-  .option('-f, --force', 'sobrescreve arquivos existentes')
+  .description('Initialize an EstudeMe vault (creates _templates/ and README.md)')
+  .option('-v, --vault <path>', 'vault path (default: cwd)')
+  .option('-f, --force', 'overwrite existing files')
   .action(async (opts) => {
     const r = await runInit(opts);
     console.log(r.output);
@@ -3178,30 +2913,30 @@ program
   });
 ```
 
-- [ ] **Step 18.7: Build e rodar testes**
+- [ ] **Step 18.7: Build and run tests**
 
 ```bash
 npm run -w @estudeme/cli build
 npm run -w @estudeme/cli test
 ```
 
-Expected: build copia `templates/` para `dist/templates/`. Tests passam.
+Expected: build copies `templates/` to `dist/templates/`. Tests pass.
 
 - [ ] **Step 18.8: Commit**
 
 ```bash
 git add packages/cli/templates/ packages/cli/src/commands/init.ts packages/cli/src/index.ts packages/cli/tsup.config.ts packages/cli/tests/commands/init.test.ts
-git commit -m "feat(cli): comando 'init' com templates e README"
+git commit -m "feat(cli): 'init' command with templates and README"
 ```
 
 ---
 
-## Tarefa 19: CI no GitHub Actions
+## Task 19: GitHub Actions CI
 
 **Files:**
 - Create: `.github/workflows/ci.yaml`
 
-- [ ] **Step 19.1: Criar workflow**
+- [ ] **Step 19.1: Create workflow**
 
 `.github/workflows/ci.yaml`:
 ```yaml
@@ -3228,7 +2963,7 @@ jobs:
       - run: npm run test
 ```
 
-- [ ] **Step 19.2: Validar localmente que todos os scripts passam**
+- [ ] **Step 19.2: Validate locally**
 
 ```bash
 npm ci
@@ -3238,23 +2973,23 @@ npm run lint
 npm run test
 ```
 
-Expected: tudo passa.
+Expected: everything passes.
 
 - [ ] **Step 19.3: Commit**
 
 ```bash
 git add .github/
-git commit -m "ci: workflow GitHub Actions (build, typecheck, lint, test)"
+git commit -m "ci: GitHub Actions workflow (build, typecheck, lint, test)"
 ```
 
 ---
 
-## Tarefa 20: Validação E2E contra Vault Real
+## Task 20: E2E Validation Against the Real Vault
 
 **Files:**
-- Create: `docs/superpowers/notes/2026-04-14-fase-0-validacao.md` (notas de validação)
+- Create: `docs/superpowers/notes/2026-04-14-phase-0-validation.md`
 
-- [ ] **Step 20.1: Rodar `estudeme init` em pasta temporária**
+- [ ] **Step 20.1: Run `estudeme init` in a temporary folder**
 
 ```bash
 mkdir -p /tmp/estudeme-test-vault
@@ -3263,33 +2998,33 @@ ls -la /tmp/estudeme-test-vault/_templates/
 cat /tmp/estudeme-test-vault/README.md
 ```
 
-Expected: pasta criada com 5 templates e README.
+Expected: folder created with 5 templates and README.
 
-- [ ] **Step 20.2: Rodar `estudeme validate` no vault codex-technomanticus**
+- [ ] **Step 20.2: Run `estudeme validate` against codex-technomanticus**
 
 ```bash
 node packages/cli/dist/index.js validate --vault /home/josenaldo/repos/personal/codex-technomanticus 2>&1 | tee /tmp/validate-codex.log
 ```
 
-Esperado: lista de erros/avisos. Anotar quantidade.
+Expected: list of errors/warnings. Record counts.
 
-- [ ] **Step 20.3: Rodar `estudeme trail list` no vault codex-technomanticus**
+- [ ] **Step 20.3: Run `estudeme trail list`**
 
 ```bash
 node packages/cli/dist/index.js trail list --vault /home/josenaldo/repos/personal/codex-technomanticus
 ```
 
-Esperado: lista de trilhas (Trilha Java, Backend, etc.) com progresso. Pode ter 0% se o frontmatter atual não tem `type: trail` — anotar isso como follow-up.
+Expected: list of trails with progress. May show 0% if current frontmatter lacks `type: trail`.
 
-- [ ] **Step 20.4: Rodar `estudeme metrics show`**
+- [ ] **Step 20.4: Run `estudeme metrics show`**
 
 ```bash
 node packages/cli/dist/index.js metrics show --vault /home/josenaldo/repos/personal/codex-technomanticus
 ```
 
-Esperado: dashboard com totais.
+Expected: dashboard with totals.
 
-- [ ] **Step 20.5: Rodar `estudeme cards list` e `cards export`**
+- [ ] **Step 20.5: Run `estudeme cards list` and `cards export`**
 
 ```bash
 node packages/cli/dist/index.js cards list --vault /home/josenaldo/repos/personal/codex-technomanticus
@@ -3297,80 +3032,77 @@ node packages/cli/dist/index.js cards export --vault /home/josenaldo/repos/perso
 cat /tmp/cards.json | head -30
 ```
 
-Esperado: lista pode ser vazia se vault atual não tem `type: card` — anotar como follow-up.
+- [ ] **Step 20.6: Document results**
 
-- [ ] **Step 20.6: Documentar resultados**
+Create `docs/superpowers/notes/2026-04-14-phase-0-validation.md` recording:
+- Documents parsed
+- Validation errors count
+- Trails/notes/cards found
+- Vault adjustments needed to fully benefit from EstudeMe
+- Bugs found
+- Next steps
 
-`docs/superpowers/notes/2026-04-14-fase-0-validacao.md`:
-
-Anotar:
-- Quantos documentos parsed
-- Quantos erros de validação
-- Quantas trilhas/notas/cards encontrados
-- Quais ajustes precisam no vault para aproveitar 100%
-- Bugs encontrados
-- Próximos passos
-
-- [ ] **Step 20.7: Commit final da Fase 0**
+- [ ] **Step 20.7: Final commit**
 
 ```bash
 git add docs/superpowers/notes/
-git commit -m "docs: validacao e2e da Fase 0 contra vault codex-technomanticus"
+git commit -m "docs: phase 0 e2e validation against codex-technomanticus vault"
 ```
 
 ---
 
-## Auto-Revisão do Plano
+## Self-Review
 
-**Cobertura do spec (Fase 0):**
+**Spec coverage (Phase 0):**
 
-| Requisito do spec | Tarefa(s) |
-|-------------------|-----------|
-| Monorepo TS + Turborepo | 1, 2, 12 |
-| Tipos: trail, module, note, card, quiz, exam, resource, performance | 3, 4 |
-| Parser de frontmatter | 5 |
-| Parser de wikilinks | 6 |
-| Parser de documento | 7 |
-| Vault walker + index | 8 |
-| Validação de schemas + links | 9 |
-| Métricas de progresso | 10 |
-| Export Anki (estratégia inicial: JSON neutro) | 11 |
-| CLI: `init` | 18 |
-| CLI: `validate` | 14 |
-| CLI: `trail list/status` | 15 |
-| CLI: `cards list/export` | 16 |
-| CLI: `metrics show` | 17 |
-| CI | 19 |
-| Validação contra vault real | 20 |
+| Spec requirement                                                    | Task(s)  |
+| ------------------------------------------------------------------- | -------- |
+| Monorepo TS + Turborepo                                             | 1, 2, 12 |
+| Types: trail, module, note, card, quiz, exam, resource, performance | 3, 4     |
+| Frontmatter parser                                                  | 5        |
+| Wikilink parser                                                     | 6        |
+| Document parser                                                     | 7        |
+| Vault walker + index                                                | 8        |
+| Schema + link validation                                            | 9        |
+| Progress metrics                                                    | 10       |
+| Anki export (neutral JSON)                                          | 11       |
+| CLI: `init`                                                         | 18       |
+| CLI: `validate`                                                     | 14       |
+| CLI: `trail list/status`                                             | 15       |
+| CLI: `cards list/export`                                            | 16       |
+| CLI: `metrics show`                                                 | 17       |
+| CI                                                                  | 19       |
+| Validation against the real vault                                   | 20       |
 
-**Fora de escopo (futuras fases):**
-- Skills (Fase 1)
-- Revisão espaçada FSRS (Fase 2)
-- Quizzes interativos (Fase 2)
-- Plugin Obsidian (Fase 3)
-- Site/Quartz (Fase 4)
-- Marketplace/API (Fase 5)
-- `.apkg` nativo em TS (avaliar Fase 2 ou delegar ao arcana indefinidamente)
-- Comando `ingest` (delega para KB) — adicionado em fase futura
+**Out of scope (future phases):**
 
-**Decisões deliberadas para reduzir escopo:**
+- Skills (Phase 1)
+- FSRS spaced repetition (Phase 2)
+- Interactive quizzes (Phase 2)
+- Obsidian plugin (Phase 3)
+- Site / Quartz (Phase 4)
+- Marketplace / API (Phase 5)
+- Native `.apkg` in TS
+- `ingest` command (delegates to KB) — Phase 1
 
-1. **Anki .apkg via JSON intermediário.** Em vez de portar genanki para JS, geramos JSON neutro. Quem quiser .apkg usa o arcana Python passando esse JSON. Fase posterior pode adicionar suporte nativo.
-2. **Comando `ingest` postergado.** Delegação para KB vem na Fase 1 junto com as skills.
-3. **Sem comando `cards generate`.** Geração de cards via IA é Fase 1 (skills).
-4. **Sem comando `quiz generate/run`.** Quiz interativo é Fase 2.
+**Deliberate scope reductions:**
 
-**Verificação de placeholders:** Nenhum TBD/TODO/FIXME no plano. Todos os steps têm código completo.
+1. Anki `.apkg` via neutral JSON; `arcana` Python handles final `.apkg`.
+2. `ingest` deferred to Phase 1 skills.
+3. No `cards generate` (AI-driven) — Phase 1.
+4. No `quiz run` (interactive) — Phase 2.
 
-**Consistência de tipos:** Nomes de funções (`parseVault`, `validateVault`, `validateDocument`, `computeTrailProgress`, `computeAllTrailsProgress`, `extractCardsForExport`, `cardsToJSON`) usados consistentemente entre tarefas.
+**Placeholder scan:** No TBD/TODO/FIXME. Every step has complete code.
 
-**Total:** 20 tarefas, ~110 steps. Estimativa: 8-12 dias de trabalho dedicado, ou 3-4 semanas em ritmo de side project.
+**Type consistency:** `parseVault`, `validateVault`, `validateDocument`, `computeTrailProgress`, `computeAllTrailsProgress`, `extractCardsForExport`, `cardsToJSON` used consistently.
+
+**Total:** 20 tasks, ~110 steps. Estimate: 8-12 days dedicated, or 3-4 weeks as a side project.
 
 ---
 
-## Próximos Passos Após Conclusão da Fase 0
+## Next Steps After Phase 0
 
-1. Documentar Fase 0 entregue (release notes, screenshots de output da CLI)
-2. Adaptar vault codex-technomanticus para usar frontmatter EstudeMe (adicionar `type: trail` nas trilhas, etc.)
-3. Iniciar planejamento da **Fase 1: Skills + IA do Usuário**
-4. Considerar publicar `@estudeme/core` e `@estudeme/cli` no npm como `estudeme-core` e `estudeme-cli` (ou pacote único `estudeme`)
+1. Publish Phase 0 (release notes, CLI output)
+2. Adapt codex-technomanticus vault to use EstudeMe frontmatter
+3. Plan **Phase 1: Skills + User AI**
+4. Consider publishing `@estudeme/core` and `@estudeme/cli` on npm
