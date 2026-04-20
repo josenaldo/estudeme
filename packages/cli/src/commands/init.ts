@@ -1,11 +1,29 @@
 import { mkdir, writeFile, readFile, access } from 'node:fs/promises';
+import { accessSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveVaultPath } from '../lib/vault-loader.js';
 import { c } from '../lib/format.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const TEMPLATES_DIR = path.resolve(__dirname, '../templates');
+// In source: __dirname = .../src/commands → templates at .../templates/
+// In dist:   __dirname = .../dist         → templates at .../dist/templates/
+function resolveTemplatesDir(): string {
+  const candidates = [
+    path.resolve(__dirname, '../templates'),   // dist/templates (after build)
+    path.resolve(__dirname, '../../templates'), // src/commands -> packages/cli/templates (tests)
+  ];
+  for (const candidate of candidates) {
+    try {
+      accessSync(candidate);
+      return candidate;
+    } catch {
+      // try next
+    }
+  }
+  throw new Error('Could not locate templates directory');
+}
+const TEMPLATES_DIR = resolveTemplatesDir();
 const TEMPLATE_NAMES = ['trail', 'module', 'note', 'card', 'quiz'];
 
 export interface InitOptions {
