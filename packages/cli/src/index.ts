@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { runValidate } from './commands/validate.js';
 import { runTrailList, runTrailStatus } from './commands/trail.js';
+import { runCardsList, runCardsExport } from './commands/cards.js';
 
 const program = new Command();
 
@@ -37,6 +38,33 @@ trail
   .option('-v, --vault <path>', 'vault path')
   .action(async (trailName, opts) => {
     const r = await runTrailStatus({ ...opts, trail: trailName });
+    console.log(r.output);
+    process.exit(r.exitCode);
+  });
+
+const cards = program.command('cards').description('Manage flashcards');
+
+cards
+  .command('list')
+  .description('List cards in the vault with optional filters')
+  .option('-v, --vault <path>', 'vault path')
+  .option('-t, --trail <name>', 'filter by trail')
+  .option('-m, --module <name>', 'filter by module')
+  .action(async (opts) => {
+    const r = await runCardsList(opts);
+    console.log(r.output);
+    process.exit(r.exitCode);
+  });
+
+cards
+  .command('export')
+  .description('Export cards (json or apkg)')
+  .requiredOption('-o, --output <path>', 'output file')
+  .option('-f, --format <format>', 'json | apkg', 'json')
+  .option('-v, --vault <path>', 'vault path')
+  .option('-t, --trail <name>', 'filter by trail')
+  .action(async (opts) => {
+    const r = await runCardsExport(opts);
     console.log(r.output);
     process.exit(r.exitCode);
   });
