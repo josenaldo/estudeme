@@ -15,7 +15,7 @@ export interface TrailProgress {
 }
 
 function getTrailTitle(doc: ParsedDocument): string {
-  const fm = doc.frontmatter as Record<string, unknown>;
+  const fm = doc.frontmatter as unknown as Record<string, unknown>;
   const raw = fm['trail'];
   return typeof raw === 'string' ? normalizeWikilink(raw) : '';
 }
@@ -42,11 +42,11 @@ export function computeTrailProgress(trail: ParsedDocument, index: VaultIndex): 
   const totalModules = modules.length;
 
   const completedModules = modules.filter(
-    (m) => (m.frontmatter as Record<string, unknown>)['status'] === 'completed',
+    (m) => (m.frontmatter as unknown as Record<string, unknown>)['status'] === 'completed',
   ).length;
 
   const inProgressModules = modules.filter(
-    (m) => (m.frontmatter as Record<string, unknown>)['status'] === 'in-progress',
+    (m) => (m.frontmatter as unknown as Record<string, unknown>)['status'] === 'in-progress',
   ).length;
 
   const notStartedModules = totalModules - completedModules - inProgressModules;

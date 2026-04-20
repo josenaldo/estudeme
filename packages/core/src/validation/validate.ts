@@ -24,7 +24,7 @@ export interface VaultValidationResult {
 
 export function validateDocument(doc: ParsedDocument): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const fm = doc.frontmatter as Record<string, unknown>;
+  const fm = doc.frontmatter as unknown as Record<string, unknown>;
   const type = fm['type'] as string;
   const schema = SCHEMAS[type];
 

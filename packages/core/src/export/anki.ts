@@ -32,7 +32,7 @@ export function extractCardsForExport(index: VaultIndex): CardForExport[] {
   const cardDocs = index.byType['card'] ?? [];
 
   return cardDocs.map((doc) => {
-    const fm = doc.frontmatter as Record<string, unknown>;
+    const fm = doc.frontmatter as unknown as Record<string, unknown>;
     const { front, back } = splitFrontBack(doc.content);
 
     const resolveWikilink = (value: unknown): string | undefined => {
