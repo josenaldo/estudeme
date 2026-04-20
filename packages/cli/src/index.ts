@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { runValidate } from './commands/validate.js';
 import { runTrailList, runTrailStatus } from './commands/trail.js';
 import { runCardsList, runCardsExport } from './commands/cards.js';
+import { runMetricsShow } from './commands/metrics.js';
 
 const program = new Command();
 
@@ -65,6 +66,18 @@ cards
   .option('-t, --trail <name>', 'filter by trail')
   .action(async (opts) => {
     const r = await runCardsExport(opts);
+    console.log(r.output);
+    process.exit(r.exitCode);
+  });
+
+const metrics = program.command('metrics').description('Show study metrics');
+
+metrics
+  .command('show')
+  .description('Dashboard with totals and per-trail progress')
+  .option('-v, --vault <path>', 'vault path')
+  .action(async (opts) => {
+    const r = await runMetricsShow(opts);
     console.log(r.output);
     process.exit(r.exitCode);
   });
