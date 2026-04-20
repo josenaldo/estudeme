@@ -3,6 +3,7 @@ import { runValidate } from './commands/validate.js';
 import { runTrailList, runTrailStatus } from './commands/trail.js';
 import { runCardsList, runCardsExport } from './commands/cards.js';
 import { runMetricsShow } from './commands/metrics.js';
+import { runInit } from './commands/init.js';
 
 const program = new Command();
 
@@ -78,6 +79,17 @@ metrics
   .option('-v, --vault <path>', 'vault path')
   .action(async (opts) => {
     const r = await runMetricsShow(opts);
+    console.log(r.output);
+    process.exit(r.exitCode);
+  });
+
+program
+  .command('init')
+  .description('Initialize an EstudeMe vault (creates _templates/ and README.md)')
+  .option('-v, --vault <path>', 'vault path (default: cwd)')
+  .option('-f, --force', 'overwrite existing files')
+  .action(async (opts) => {
+    const r = await runInit(opts);
     console.log(r.output);
     process.exit(r.exitCode);
   });
