@@ -1,171 +1,142 @@
 # EstudeMe
 
-> Your study grimoire — organize trails, master content, measure progress.
+[![CI](https://github.com/josenaldo/estudeme/actions/workflows/ci.yaml/badge.svg)](https://github.com/josenaldo/estudeme/actions/workflows/ci.yaml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Open-core self-directed learning platform. Markdown vault + frontmatter as the universal data format. The student is the protagonist — they create, organize, and study their own content. The tool removes mechanical work from the path and provides visibility on where the student is and where they are going.
+> An open-core study system for developers who need to learn constantly — for work, for certifications, for craft.
+
+EstudeMe is built for the developer whose job demands continuous learning: someone moving between a new framework, a cloud certification, a foundational book, and a deep technical topic, often in the same week. The product treats this as the default state, not the exception.
+
+The data lives in a plain Markdown vault with YAML frontmatter. The vault belongs to the user — portable, grep-able, version-controllable. EstudeMe is the system that turns that vault into a usable learning surface: validated structure, progress metrics, spaced repetition (planned), and integrations with the tools developers already use.
 
 ## Status
 
-Under development — Phase 0 (Foundation).
+Phase 0 (Foundation) is **complete**. The core library and CLI exist and are tested end-to-end against a real Obsidian vault. The product is not yet packaged for end users — installation today means cloning this repository.
 
-See the [design doc](docs/superpowers/specs/2026-04-14-estudeme-design.md) and the [Phase 0 plan](docs/superpowers/plans/2026-04-14-phase-0-foundation.md).
+The roadmap below describes where this is going. Phase 0 is the foundation that makes the rest possible.
 
----
+## Why this exists
 
-## Architecture Overview
+Most study tools fall into one of two failure modes. The lightweight ones (note apps, flashcard apps) handle one piece of the workflow well but leave the orchestration to the user. The heavy ones (LMS, course platforms) impose a structure that does not survive contact with how a working developer actually learns.
 
-EstudeMe is a TypeScript monorepo with a layered architecture:
+EstudeMe takes a different starting point. The data format is Markdown with frontmatter — the same format developers already use for notes, READMEs, blog posts. The structure is opinionated where it has to be (typed documents: trails, modules, notes, cards, quizzes) and open everywhere else. The tooling sits on top of the vault, not around it.
 
-```
-┌──────────────────────────────────────────────────┐
-│                     User                          │
-├──────────┬───────────┬──────────┬────────────────┤
-│ Obsidian │    CLI    │  Skills  │   Site/Web     │
-│  Plugin  │           │  (.md)   │   (future)     │
-├──────────┴───────────┴──────────┴────────────────┤
-│              Core Lib (TypeScript)                │
-│  ┌─────────┬──────────┬─────────┬─────────────┐  │
-│  │  Vault  │  Spaced  │ Metrics │   Content   │  │
-│  │  Parser │  Rep     │ Engine  │  Generator  │  │
-│  └─────────┴──────────┴─────────┴─────────────┘  │
-├──────────────────────────────────────────────────┤
-│          Vault (Markdown + Frontmatter)           │
-└──────────────────────────────────────────────────┘
-```
+The open-core model is deliberate. The data format and the engine that operates on it stay open and portable, so users never have to migrate out. The hosted SaaS surfaces (sync, web UI, collaboration) are the commercial layer. This split is documented in [ADR-0001](docs/decisions/0001-dual-goal-execution.md).
 
-**Packages:**
-
-| Package | Purpose |
-|---|---|
-| `@estudeme/core` | Core lib — vault parser, FSRS, metrics, export. Zero Obsidian dependencies. |
-| `@estudeme/cli` | CLI — `init`, `validate`, `trail`, `cards`, `quiz`, `metrics`, `site`, `ingest` |
-
----
-
-## The Agent Workflow
-
-EstudeMe is designed to be operated by AI agents (Claude Code, GitHub Copilot, Gemini, etc.) via a **context engineering architecture** rather than only through direct CLI commands.
-
-### What this means
-
-A student installs the CLI and a matching set of **skills** into their AI agent. Then they interact in natural language:
-
-> "Create a trail on Java Backend with beginner difficulty."
-
-The agent loads the `estudeme-trail` skill, which guides it step-by-step to invoke the CLI correctly. No memorization of commands. No context lost between sessions.
-
-### Why this architecture works
-
-This design follows the principles of **context engineering** — the discipline of curating what an agent sees *before* it responds, so results are consistent and predictable without requiring the user to re-explain the project every session.
-
-It is not about asking better questions. It is about the environment you create for the agent to work in.
-
-### The Three Context Layers
-
-EstudeMe's agent workflow is organized in three layers, following the [three-layer context architecture](https://josenaldo.github.io/blog/context-engineering-guia-completo):
+## How it works
 
 ```
-Layer 1 — Universal (AGENTS.md / CLAUDE.md)
-  ├── Project identity: what EstudeMe is, the stack, the structure
-  ├── Critical constraints: what agents must NEVER do
-  ├── Essential commands: the 5-6 most-used CLI commands
-  └── References to layers 2 and 3 (never duplicates them)
-
-Layer 2 — Tool-Specific
-  ├── CLAUDE.md              → Claude Code
-  ├── .github/copilot-instructions.md  → GitHub Copilot
-  └── GEMINI.md              → Gemini CLI
-
-Layer 3 — Procedural Skills (loaded on demand)
-  └── skills/
-      ├── estudeme-trail/SKILL.md   → manage learning trails
-      ├── estudeme-cards/SKILL.md   → flashcard operations
-      ├── estudeme-quiz/SKILL.md    → quiz generation and review
-      └── estudeme-ingest/SKILL.md  → ingest content from external sources
+┌────────────────────────────────────────────────────┐
+│                       User                          │
+├──────────────────┬─────────────┬───────────────────┤
+│       CLI        │  Obsidian   │   Web (future)    │
+│  @estudeme/cli   │  Plugin     │                   │
+│                  │  (planned)  │                   │
+├──────────────────┴─────────────┴───────────────────┤
+│                @estudeme/core                       │
+│   parser · validation · metrics · export · FSRS    │
+├────────────────────────────────────────────────────┤
+│        Vault (Markdown + YAML frontmatter)          │
+└────────────────────────────────────────────────────┘
 ```
 
-Each layer is loaded at the right moment, not all at once. An agent helping create a flashcard does not need to load the quiz skill. This **progressive disclosure of context** is what allows the system to scale without overloading the agent's context window.
+`@estudeme/core` is a TypeScript library with zero coupling to Obsidian or any specific editor. It reads a vault, parses each document into a typed model (trail, module, note, card, quiz, exam, resource, performance), validates the structure, and exposes metrics and export operations.
 
-### The Five Types of Context
+`@estudeme/cli` is the first consumer of `core`. It provides commands to scaffold a vault, validate it, inspect trail progress, list and export cards, and report vault-wide metrics. It is the surface used by developers who live in the terminal — and by AI agents that need a stable, scriptable interface.
 
-Each layer provides a different type of context the agent needs:
+Future surfaces (Obsidian plugin, web app) consume the same core library. The vault is the contract; every surface honors it.
 
-| Type | What it answers | Where it lives |
-|---|---|---|
-| **Identity** | "Where am I? How does this project work?" | `CLAUDE.md` / `AGENTS.md` |
-| **Constraints** | "What must I NEVER do?" | `CLAUDE.md` / `AGENTS.md` |
-| **Procedural** | "How do I execute this specific operation?" | `skills/*/SKILL.md` |
-| **State** | "What decisions were already made?" | `docs/` ADRs and memory files |
-| **Temporary** | "What is open right now? What is the current task?" | Managed automatically by the agent tool |
+## Roadmap
 
-### How Skills Work
+| Phase | Goal                                                  | Status        |
+| ----- | ----------------------------------------------------- | ------------- |
+| 0     | Foundation — core library and CLI                     | Complete      |
+| 1     | FSRS engine and review loop                           | Next          |
+| 2     | Agent skills layer (Claude Code, Copilot, Gemini)     | Planned       |
+| 3     | Obsidian plugin                                       | Gated         |
+| 4     | Web app — Pro SaaS surface                            | Future        |
+| 5     | Marketplace and community                             | Future        |
 
-A skill is a unit of procedural knowledge loaded on demand. Think of it as an operations runbook: the agent does not read it every session — only when it needs to perform that specific operation.
+Phase 3 is **gated** — it will only start after Phase 0–2 show evidence of real use (CLI users, active issues, community signal). Building the Obsidian plugin is expensive and only earns its place once there is a pull for it. The criterion is documented in the [strategic context](docs/context/2026-05-01-strategic-context.md), premise P5.
 
-```markdown
----
-name: estudeme-trail
-description: "Manage learning trails in an EstudeMe vault. Use when the user asks to
-create, list, update, or check the status of a trail. Not for card or quiz operations."
----
+The roadmap is scope-driven, not date-driven. A phase completes when the scope is done.
 
-# Skill: estudeme-trail
+## Tech stack
 
-## Step 1: Identify the operation
-- [ ] Determine if the user wants to create, list, or check status of a trail
+| Layer        | Choice                                            |
+| ------------ | ------------------------------------------------- |
+| Language     | TypeScript 5                                      |
+| Runtime      | Node.js 22+                                       |
+| Monorepo     | Turborepo with npm workspaces                     |
+| Build        | tsup                                              |
+| Test         | Vitest                                            |
+| CLI          | Commander.js                                      |
+| Data parsing | gray-matter, js-yaml                              |
+| Code quality | ESLint, Prettier                                  |
+| CI           | GitHub Actions                                    |
 
-## Step 2: Execute the CLI command
-- [ ] `estudeme trail create --title "..." --level beginner|intermediate|advanced`
-- [ ] Confirm the file was created in the vault
+The choices are deliberately boring for the layers that benefit from boring. The interesting parts are in the data model, the agent integration, and the FSRS engine — not in the build tooling.
 
-## Step 3: Report result
-- [ ] Show the user the created trail frontmatter
-```
+A more detailed walkthrough lives in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-The agent loads the frontmatter description for all available skills. When the task matches, it loads the full body. This is **progressive disclosure**: only the needed context enters the window.
+## Try it locally
 
-### The Anti-Duplication Principle
-
-Every rule has exactly one source of truth. All other files reference it — never duplicate it.
-
-If a constraint lives in `CLAUDE.md`, the `AGENTS.md` does not repeat the constraint — it points to `CLAUDE.md`. When you need to update the rule, you update it in one place.
-
-### The Constraint Skill
-
-At Stage 3, there is a `enforce-boundary` constraint-skill that the agent runs before finalizing any change. It checks that the output respects the vault schema, frontmatter types, and CLI conventions — architectural violations are caught by the agent itself, not in a code review.
-
----
-
-## Development Workflow (TDD)
-
-```
-write failing test → minimal implementation → passing test → commit
-```
-
-Each TDD cycle can be its own commit. Use Conventional Commits: `feat:`, `fix:`, `docs:`, `chore:`, `ci:`, `test:`, `refactor:`.
-
-**Commands:**
+The project is not yet published to npm. To try it in its current state:
 
 ```bash
-pnpm build        # build all packages
-pnpm test         # run all tests
-pnpm lint         # ESLint
-pnpm typecheck    # TypeScript type check
+git clone git@github.com:josenaldo/estudeme.git
+cd estudeme
+npm install
+npm run build
+npm run test
 ```
 
----
+Once built, you can run the CLI against a sample vault:
 
-## Open-Core Model
+```bash
+# Scaffold a new vault
+node packages/cli/dist/index.js init my-vault
 
-| Layer | License |
-|---|---|
-| Core Lib + CLI + Skills + Obsidian Plugin | Open source (MIT) |
-| Web App (SaaS) + B2B API | Proprietary |
+# Validate a vault
+node packages/cli/dist/index.js validate my-vault
 
-The vault always belongs to the user: open data, Markdown format, portable.
+# List trails and check status
+node packages/cli/dist/index.js trail list my-vault
+node packages/cli/dist/index.js trail status my-vault "My Trail"
 
----
+# List and export cards
+node packages/cli/dist/index.js cards list my-vault
+node packages/cli/dist/index.js cards export my-vault --out cards.json
+
+# Vault-wide metrics
+node packages/cli/dist/index.js metrics show my-vault
+```
+
+A standalone, installable binary will arrive after Phase 1 (when there is something worth installing for an end user).
+
+## Architecture
+
+Three principles shape the architecture:
+
+**Open data first.** The vault is plain Markdown with frontmatter. No proprietary format, no required database. A user can grep their vault, version it with git, edit it with any editor. EstudeMe is a layer on top, not a wrapper around.
+
+**Core is agnostic.** `@estudeme/core` has zero Obsidian dependencies. The Obsidian plugin, when it ships, will be one consumer among several. The same is true for any future surface.
+
+**Agent-native by design.** EstudeMe is built to be operated by AI agents (Claude Code, GitHub Copilot, Gemini) as a first-class interface, not an afterthought. The CLI is the stable contract; agents load procedural skills that map natural-language requests to CLI calls. The design follows a layered context model described in [ARCHITECTURE.md](ARCHITECTURE.md#agent-native-design).
+
+## Contributing
+
+Contributions are welcome once the project reaches a state where they can be meaningfully integrated (Phase 1+). For now, see [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, commit conventions, and the ADR process that governs non-trivial decisions.
+
+## Decisions and context
+
+Strategic premises and architectural decisions are tracked as documents in this repository, not implicit in the founder's head:
+
+- [Strategic context](docs/context/2026-05-01-strategic-context.md) — the premises driving the product (audience, positioning, pricing model, release gates).
+- [docs/decisions/](docs/decisions/) — Architecture Decision Records (ADRs).
+- [Design doc](docs/superpowers/specs/2026-04-14-estudeme-design.md) — the long-form product and architecture document.
+- [Phase 0 plan](docs/superpowers/plans/2026-04-14-phase-0-foundation.md) — the implementation plan that produced this foundation.
 
 ## License
 
-MIT
+[MIT](LICENSE). The open parts of EstudeMe (core library, CLI, future plugin and skills) are MIT-licensed and will stay that way. Any future hosted SaaS surfaces are a separate concern with separate licensing.
