@@ -1,0 +1,26 @@
+{
+  "name": "estudeme",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Open-core self-directed learning platform",
+  "license": "MIT",
+  "author": "Josenaldo de Oliveira Matos Filho",
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "clean": "turbo clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.0",
+    "prettier": "^3.3.0",
+    "eslint": "^9.0.0",
+    "typescript-eslint": "^8.0.0"
+  },
+  "packageManager": "npm@10.0.0",
+  "engines": { "node": ">=22.0.0" }
+}
