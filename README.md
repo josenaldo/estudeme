@@ -51,8 +51,8 @@ Future surfaces (Obsidian plugin, web app) consume the same core library. The va
 | Phase | Goal                                                  | Status        |
 | ----- | ----------------------------------------------------- | ------------- |
 | 0     | Foundation — core library and CLI                     | Complete      |
-| 1     | FSRS engine and review loop                           | Next          |
-| 2     | Agent skills layer (Claude Code, Copilot, Gemini)     | Planned       |
+| 1     | Agent skills layer (Claude Code, Copilot, Gemini)     | Next          |
+| 2     | FSRS engine and interactive review loop               | Planned       |
 | 3     | Obsidian plugin                                       | Gated         |
 | 4     | Web app — Pro SaaS surface                            | Future        |
 | 5     | Marketplace and community                             | Future        |
