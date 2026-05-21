@@ -7,3 +7,6 @@ coverage/
 .env
 .env.local
 *.tsbuildinfo
+
+# Skills bundled into the CLI package at build time. Canonical source is .agents/skills/.
+packages/cli/skills/
