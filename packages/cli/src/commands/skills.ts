@@ -7,7 +7,7 @@ export type SkillsSourceResolver = () => string;
 
 const defaultSourceResolver: SkillsSourceResolver = () => {
   const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, '..', '..', 'skills');
+  return resolve(here, '..', 'skills');
 };
 
 export function registerSkillsCommand(
