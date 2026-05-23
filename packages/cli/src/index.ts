@@ -4,6 +4,7 @@ import { runTrailList, runTrailStatus } from './commands/trail.js';
 import { runCardsList, runCardsExport } from './commands/cards.js';
 import { runMetricsShow } from './commands/metrics.js';
 import { runInit } from './commands/init.js';
+import { registerSkillsCommand } from './commands/skills.js';
 
 const program = new Command();
 
@@ -93,6 +94,8 @@ program
     console.log(r.output);
     process.exit(r.exitCode);
   });
+
+registerSkillsCommand(program);
 
 program.parseAsync(process.argv).catch((err) => {
   console.error(err);
