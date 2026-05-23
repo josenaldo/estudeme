@@ -29,3 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI prebuild step that bundles the canonical skills into the `@estudeme/cli` npm package.
 - Catalog test that validates every skill's frontmatter (name, description) and required sections.
 - ADR-0002: Skills architecture (three-layer context, single canonical source).
+
+### Fixed
+
+- Vault parser walker now skips `.agents/`, `.claude/`, and `.github/` directories, so installed agent skills are not flagged as malformed EstudeMe documents.
