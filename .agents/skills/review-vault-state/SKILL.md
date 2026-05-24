@@ -23,7 +23,8 @@ metadata:
 
 ### 1. Validate the vault
 
-→ **Use skill:** [list-trails](../validate-vault/SKILL.md)
+→ **Use skill:** [validate-vault](../validate-vault/SKILL.md)
+→ **CLI:** `estudeme validate <vault-path>`
 
 Confirm the vault is well-formed before reading further. If validation
 surfaces errors that would distort the rest of the report (missing types,
@@ -33,26 +34,38 @@ or fix the issues first.
 ### 2. List the trails
 
 → **Use skill:** [list-trails](../list-trails/SKILL.md)
+→ **CLI:** `estudeme trail list <vault-path>`
 
-Get the catalog of trails with their levels and statuses. Keep the output
-in memory — it feeds the synthesis step.
+Get the catalog of trails with their levels and statuses. Keep the full
+table output in memory — it feeds the synthesis step verbatim.
 
 ### 3. Report the vault metrics
 
 → **Use skill:** [report-metrics](../report-metrics/SKILL.md)
+→ **CLI:** `estudeme metrics show <vault-path>`
 
-Get the top-level counts and per-trail breakdowns.
+Get the top-level counts and per-trail breakdowns. Keep the totals table and
+per-trail progress block verbatim — they feed the synthesis step.
 
 ### 4. Synthesize into a single report
 
-Combine the results from steps 1, 2, and 3 into a single prose summary with
-this structure:
+Combine the results from steps 1, 2, and 3 into a single coherent report.
+Tables and rendered output from the underlying CLI must be preserved as-is —
+do **not** summarize them away. Use this structure:
 
-- **Health line:** "Vault is healthy" or "Vault has N issues (see below)".
-- **Catalog line:** "X trails, Y modules total, Z notes, W cards".
-- **Per-trail highlights:** for each trail, one line with the level, status,
-  and rough progress hint (e.g., "Java Backend, intermediate, 4 of 6 modules
-  in progress").
+- **Header:** `Vault Overview — <vault-path>`.
+- **Health line:** "Vault is healthy" or "Vault has N issues (see below)";
+  if there are issues, list them as bullets.
+- **Totals table:** include the totals table from `estudeme metrics show`
+  verbatim (the box-drawn table with Trails / Modules / Notes / Cards /
+  Quizzes / Exams / Resources counts). Do not collapse it into prose.
+- **Trails table:** include the trail table from `estudeme trail list`
+  verbatim (the box-drawn table with Trail / Progress / Modules / Notes /
+  Cards columns). Do not collapse it into bullets.
+- **Per-trail highlights:** one short paragraph per trail with the level,
+  status, and a one-line read of the numbers (e.g., "Java Backend,
+  intermediate, 4 of 6 modules in progress — strongest movement"). This is
+  prose that complements the table, not a replacement for it.
 - **Suggested next step:** a single, concrete suggestion based on what the
   numbers reveal — e.g., the trail with the highest in-progress count, or a
   trail with broken wikilinks that should be fixed.
@@ -60,8 +73,13 @@ this structure:
 ## Critical
 
 - This meta-skill is read-only. It does not write to the vault.
-- The final report must read as a single coherent narrative, not as three
-  separate dumps from the underlying micro-skills.
+- The final report must include the rendered tables from the underlying
+  CLI verbatim — never paraphrase a table into prose, and never drop a
+  table because "earlier output already covered it". If a previous prompt
+  in the session already produced the table, re-run the command anyway so
+  the synthesis is self-contained.
+- The report should still read as one coherent document — tables flow with
+  the prose around them, they are not three separate dumps.
 - If `validate-vault` reports critical errors, stop after step 1 and surface
   them rather than proceeding to a metrics report on a broken vault.
 
@@ -72,19 +90,53 @@ this structure:
 User says: "Give me an overview of `~/study/my-vault`."
 
 Actions:
-- Run validate-vault: clean.
-- Run list-trails: 3 trails (Java Backend, Kubernetes, English for Work).
-- Run report-metrics: 14 modules, 47 notes, 22 cards.
+- Run `estudeme validate ~/study/my-vault` → clean (0 errors, 0 warnings).
+- Run `estudeme trail list ~/study/my-vault` → keep the table.
+- Run `estudeme metrics show ~/study/my-vault` → keep the totals table.
 - Synthesize.
 
-Result: a paragraph like
+Expected result (note the tables are kept verbatim, prose surrounds them):
 
-> Vault is healthy. 3 trails covering 14 modules, 47 notes, and 22 cards.
-> Java Backend (intermediate, active) has the most movement — 5 of 6 modules
-> started. Kubernetes (beginner, active) has 2 modules but no cards yet.
-> English for Work (intermediate, paused) is dormant.
+> **Vault Overview — ~/study/my-vault**
 >
-> Suggested next step: finish the last Java Backend module to close that
+> **Health:** Vault is healthy. 63 documents scanned — 0 errors, 0 warnings,
+> 0 broken wikilinks.
+>
+> **Totals**
+>
+> ```
+> ┌───────────┬───────┐
+> │   Type    │ Count │
+> ├───────────┼───────┤
+> │ Trails    │ 3     │
+> │ Modules   │ 14    │
+> │ Notes     │ 47    │
+> │ Cards     │ 22    │
+> │ Quizzes   │ 0     │
+> │ Exams     │ 0     │
+> │ Resources │ 0     │
+> └───────────┴───────┘
+> ```
+>
+> **Trails**
+>
+> ```
+> ┌────────────────────┬────────────────────┬─────────┬───────┬───────┐
+> │ Trail              │ Progress           │ Modules │ Notes │ Cards │
+> ├────────────────────┼────────────────────┼─────────┼───────┼───────┤
+> │ Java Backend       │ ███████████░░░ 83% │ 5/6     │ 28    │ 18    │
+> │ Kubernetes         │ ░░░░░░░░░░░░░░  0% │ 0/2     │ 6     │ 0     │
+> │ English for Work   │ ███████░░░░░░░ 47% │ 3/6     │ 13    │ 4     │
+> └────────────────────┴────────────────────┴─────────┴───────┴───────┘
+> ```
+>
+> **Per-trail highlights:**
+> - **Java Backend** — intermediate, active. Strongest movement: 5 of 6
+>   modules in progress.
+> - **Kubernetes** — beginner, active. 2 modules but no cards yet.
+> - **English for Work** — intermediate, paused. Dormant for now.
+>
+> **Suggested next step:** finish the last Java Backend module to close that
 > trail, or start drafting cards for Kubernetes.
 
 ## Troubleshooting
