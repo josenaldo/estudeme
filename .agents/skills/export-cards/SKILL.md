@@ -17,7 +17,7 @@ compatibility: claude-code, gemini-cli, copilot, codex
 
 ### Step 2: Run the CLI
 
-- [ ] Execute: `estudeme cards export <vault-path> --out <output-file>`
+- [ ] Execute: `estudeme cards export <vault-path> --output <output-file>`
 - [ ] Capture exit code and any messages.
 
 ### Step 3: Confirm
@@ -39,7 +39,7 @@ User says: "Export my cards from `~/study/my-vault`."
 
 Actions:
 - Confirm the output path with the user: "Save as `cards.json` here?"
-- Run `estudeme cards export ~/study/my-vault --out cards.json`
+- Run `estudeme cards export ~/study/my-vault --output cards.json`
 - Report the file path and card count
 
 Result: A JSON file ready for Anki import or downstream tooling.
