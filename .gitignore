@@ -7,3 +7,9 @@ coverage/
 .env
 .env.local
 *.tsbuildinfo
+
+# Skills bundled into the CLI package at build time. Canonical source is .agents/skills/.
+packages/cli/skills/
+
+# Created by `npm link` — local-only artifact pointing at the global lib path.
+packages/cli/bin/

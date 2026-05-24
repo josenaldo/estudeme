@@ -16,7 +16,16 @@ export interface VaultIndex {
   errors: VaultParseError[];
 }
 
-const IGNORED_DIRS = new Set(['.obsidian', '.git', 'node_modules', '.trash', '.DS_Store']);
+const IGNORED_DIRS = new Set([
+  '.obsidian',
+  '.git',
+  'node_modules',
+  '.trash',
+  '.DS_Store',
+  '.agents',
+  '.claude',
+  '.github',
+]);
 
 export async function parseVault(root: string): Promise<VaultIndex> {
   const documents: ParsedDocument[] = [];

@@ -23,3 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ADR-0001: Dual-goal execution (business product and portfolio asset).
 - ADR template (`docs/decisions/0000-template.md`).
 - Production README, CONTRIBUTING, ARCHITECTURE, CHANGELOG, LICENSE (MIT).
+- Agent skills layer under `.agents/skills/` (canonical source): six micro-skills (`list-trails`, `inspect-trail`, `list-cards`, `export-cards`, `validate-vault`, `report-metrics`) and one meta-skill (`review-vault-state`).
+- Three-layer context documentation: `AGENTS.md` as the universal source of truth, with `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md` as thin tool-specific pointers.
+- `@estudeme/cli` `skills install <vault>` command — copies bundled skills into `<vault>/.agents/skills` and creates `.claude/skills` and `.github/skills` symlinks (with `--force` to overwrite).
+- CLI prebuild step that bundles the canonical skills into the `@estudeme/cli` npm package.
+- Catalog test that validates every skill's frontmatter (name, description) and required sections.
+- ADR-0002: Skills architecture (three-layer context, single canonical source).
+
+### Fixed
+
+- Vault parser walker now skips `.agents/`, `.claude/`, and `.github/` directories, so installed agent skills are not flagged as malformed EstudeMe documents.

@@ -133,7 +133,7 @@ EstudeMe organizes agent-facing context in three layers. Each layer is loaded at
 
 **Layer 3 — Procedural skills.** Files in `skills/` that describe how to execute specific operations: `estudeme-trail/SKILL.md`, `estudeme-cards/SKILL.md`, etc. An agent loads a skill only when the task matches it. This is **progressive disclosure**: the context an agent needs to create a flashcard does not enter the window when the user is just listing trails.
 
-The skills layer is planned for Phase 1. The universal and tool-specific layers exist today.
+The skills layer is implemented as of Phase 1. The canonical location is `.agents/skills/`, with each skill in its own directory containing a `SKILL.md`. Claude Code and Copilot reach the skills through symlinks (`.claude/skills/` and `.github/skills/`), while Gemini CLI, OpenAI Codex, and Cursor read the canonical path natively. The full design is recorded in [ADR-0002](docs/decisions/0002-skills-architecture.md) and [its design spec](docs/superpowers/specs/2026-05-19-skills-architecture-design.md).
 
 ### Why a CLI under the agent
 

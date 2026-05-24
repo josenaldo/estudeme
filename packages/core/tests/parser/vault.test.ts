@@ -22,6 +22,16 @@ describe('parseVault', () => {
     expect(paths.every((p) => !p.includes('.obsidian'))).toBe(true);
   });
 
+  it('ignores agent system directories (.agents, .claude, .github)', async () => {
+    const result = await parseVault(VAULT);
+    const paths = result.documents.map((d) => d.relativePath);
+    const errors = result.errors.map((e) => e.path);
+    const allRefs = [...paths, ...errors];
+    expect(allRefs.every((p) => !p.includes('.agents'))).toBe(true);
+    expect(allRefs.every((p) => !p.includes('.claude'))).toBe(true);
+    expect(allRefs.every((p) => !p.includes('.github'))).toBe(true);
+  });
+
   it('collects invalid documents into result.errors', async () => {
     const result = await parseVault(VAULT);
     expect(result.errors.length).toBeGreaterThan(0);

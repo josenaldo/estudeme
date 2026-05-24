@@ -110,7 +110,12 @@ node packages/cli/dist/index.js cards export my-vault --out cards.json
 
 # Vault-wide metrics
 node packages/cli/dist/index.js metrics show my-vault
+
+# Install the bundled agent skills into a vault
+node packages/cli/dist/index.js skills install my-vault
 ```
+
+`skills install` copies the EstudeMe skills into `my-vault/.agents/skills` (the canonical location) and creates `.claude/skills` and `.github/skills` symlinks so Claude Code, Copilot, and Gemini all read the same set. Pass `--force` to overwrite existing skill files.
 
 A standalone, installable binary will arrive after Phase 1 (when there is something worth installing for an end user).
 
